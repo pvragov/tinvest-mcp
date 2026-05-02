@@ -5,7 +5,7 @@ MCP сервер для работы с API tbank инвестиций
 ## Установка 
 
 ```shell
-go install
+go install github.com/pvragov/tinvest-mcp/cmd/tinvest-mcp@latest
 ```
 
 ## Конфигурирование
