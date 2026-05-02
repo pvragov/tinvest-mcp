@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"tinkoff-invest-mcp/internal/model/instrument"
+	"github.com/pvragov/tinvest-mcp/internal/model/instrument"
 
 	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/mark3labs/mcp-go/server"

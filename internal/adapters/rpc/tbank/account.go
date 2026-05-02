@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"tinkoff-invest-mcp/internal/model/user"
+	"github.com/pvragov/tinvest-mcp/internal/model/user"
 
 	"opensource.tbank.ru/invest/invest-go/investgo"
 	proto "opensource.tbank.ru/invest/invest-go/proto"

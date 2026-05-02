@@ -9,11 +9,11 @@ import (
 	"os/signal"
 	"syscall"
 
-	"tinkoff-invest-mcp/internal/adapters/mcp"
-	"tinkoff-invest-mcp/internal/adapters/rpc/tbank"
-	"tinkoff-invest-mcp/internal/model/instrument"
-	"tinkoff-invest-mcp/internal/model/portfolio"
-	"tinkoff-invest-mcp/internal/model/user"
+	"github.com/pvragov/tinvest-mcp/internal/adapters/mcp"
+	"github.com/pvragov/tinvest-mcp/internal/adapters/rpc/tbank"
+	"github.com/pvragov/tinvest-mcp/internal/model/instrument"
+	"github.com/pvragov/tinvest-mcp/internal/model/portfolio"
+	"github.com/pvragov/tinvest-mcp/internal/model/user"
 
 	"github.com/mark3labs/mcp-go/server"
 	"opensource.tbank.ru/invest/invest-go/investgo"

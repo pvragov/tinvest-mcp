@@ -3,8 +3,8 @@ package portfolio
 import (
 	"context"
 
-	"tinkoff-invest-mcp/internal/model/instrument"
-	"tinkoff-invest-mcp/internal/model/user"
+	"github.com/pvragov/tinvest-mcp/internal/model/instrument"
+	"github.com/pvragov/tinvest-mcp/internal/model/user"
 )
 
 type Fetcher interface {
