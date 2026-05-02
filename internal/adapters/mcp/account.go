@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"tinkoff-invest-mcp/internal/model/user"
+	"github.com/pvragov/tinvest-mcp/internal/model/user"
 
 	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/mark3labs/mcp-go/server"

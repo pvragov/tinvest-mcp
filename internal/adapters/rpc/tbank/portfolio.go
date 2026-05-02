@@ -3,9 +3,9 @@ package tbank
 import (
 	"context"
 	"fmt"
-	"tinkoff-invest-mcp/internal/model/instrument"
 
-	"tinkoff-invest-mcp/internal/model/portfolio"
+	"github.com/pvragov/tinvest-mcp/internal/model/instrument"
+	"github.com/pvragov/tinvest-mcp/internal/model/portfolio"
 
 	"opensource.tbank.ru/invest/invest-go/investgo"
 	proto "opensource.tbank.ru/invest/invest-go/proto"
