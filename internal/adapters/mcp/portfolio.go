@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/pvragov/tinvest-mcp/internal/model/instrument"
 	"github.com/pvragov/tinvest-mcp/internal/model/invest"
 
 	"github.com/mark3labs/mcp-go/mcp"
@@ -48,12 +47,12 @@ type portfolioView struct {
 }
 
 type positionView struct {
-	InstrumentID string          `json:"instrumentID"`
-	FIGI         string          `json:"FIGI"`
-	Quantity     int64           `json:"quantity"`
-	Instrument   instrument.Type `json:"instrumentType"`
-	Ticker       string          `json:"ticker"`
-	ClassCode    string          `json:"classCode"`
+	InstrumentID string `json:"instrumentID"`
+	FIGI         string `json:"FIGI"`
+	Quantity     int64  `json:"quantity"`
+	Instrument   string `json:"instrumentType"`
+	Ticker       string `json:"ticker"`
+	ClassCode    string `json:"classCode"`
 }
 
 func mapPortfolio(p *invest.Portfolio) portfolioView {
@@ -67,7 +66,7 @@ func mapPortfolio(p *invest.Portfolio) portfolioView {
 			InstrumentID: pos.ID,
 			FIGI:         pos.FIGI,
 			Quantity:     pos.Quantity,
-			Instrument:   pos.Instrument,
+			Instrument:   pos.Instrument.String(),
 			Ticker:       pos.Ticker,
 			ClassCode:    pos.ClassCode,
 		}
