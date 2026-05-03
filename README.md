@@ -12,10 +12,10 @@ go install github.com/pvragov/tinvest-mcp/cmd/tinvest-mcp@latest
 
 Сервер конфигурируется через переменные окружения
 
-| Имя переменной            | Обязательность | Описание                       |
-|---------------------------|----------------|--------------------------------|
-| TBANK_INVEST_API_TOKEN    | +              | API токен tbank инвестиций     |
-| TBANK_INVEST_API_ENDPOINT | -              | API endpoint tbank инвестиций  |
+| Имя переменной                 | Обязательность | Описание                                          |
+|--------------------------------|----------------|---------------------------------------------------|
+| TBANK_INVEST_MCP_API_TOKEN     | +              | API токен tbank инвестиций                        |
+| TBANK_INVEST_MCP_API_ENDPOINT  | -              | API endpoint tbank инвестиций в формате host:port |
 
 ## Запуск
 
