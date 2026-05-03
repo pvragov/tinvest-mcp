@@ -117,7 +117,7 @@ func parseTBankClientConfig() (investgo.Config, error) {
 
 	endpoint := os.Getenv("TBANK_INVEST_API_ENDPOINT")
 	if endpoint == "" {
-		return investgo.Config{}, fmt.Errorf("tbank endpoint must not be empty")
+		endpoint = "invest-public-api.tbank.ru:443"
 	}
 
 	const appName = "tbank-mcp"
