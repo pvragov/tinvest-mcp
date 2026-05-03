@@ -53,6 +53,10 @@ func NewBondRegistry(bonds Repository) *BondRegistry {
 }
 
 func (r *BondRegistry) GetBondCoupons(ctx context.Context, bond BondRef, params GetBondCouponsParams) ([]BondCoupon, error) {
+	if err := params.Validate(); err != nil {
+		return nil, err
+	}
+
 	return r.bonds.FetchBondCoupons(ctx, bond, FetchBondCouponParams{
 		From: params.From,
 		To:   params.To,
@@ -62,6 +66,14 @@ func (r *BondRegistry) GetBondCoupons(ctx context.Context, bond BondRef, params 
 type GetBondCouponsParams struct {
 	From time.Time
 	To   time.Time
+}
+
+func (p *GetBondCouponsParams) Validate() error {
+	if p.From.After(p.To) {
+		return fmt.Errorf("from time must be before to time")
+	}
+
+	return nil
 }
 
 type BondRef struct {
