@@ -20,6 +20,13 @@ import (
 )
 
 func main() {
+	if err := run(); err != nil {
+		slog.Error("failed to run mcp server", "error", err)
+		os.Exit(1)
+	}
+}
+
+func run() error {
 	// Create a new MCP server
 	s := server.NewMCPServer(
 		"TBank mcp server",
@@ -34,14 +41,12 @@ func main() {
 
 	clientConfig, err := parseTBankClientConfig()
 	if err != nil {
-		slog.Error("failed to parse tbank client config", "error", err)
-		os.Exit(1)
+		return fmt.Errorf("failed to parse tbank client config: %v", err)
 	}
 
 	client, err := newTBankClient(ctx, clientConfig)
 	if err != nil {
-		slog.Error("failed to create tbank client: %v", "error", err)
-		os.Exit(1)
+		return fmt.Errorf("failed to create tbank client: %v", err)
 	}
 
 	var (
@@ -65,9 +70,9 @@ func main() {
 	go func() {
 		var serveErr error
 		if httpDebugServerEnable {
-			serveErr = runHTTPServer(s)
+			serveErr = serveHTTP(s)
 		} else {
-			serveErr = runStdinServer(s)
+			server.ServeStdio(s)
 		}
 
 		if serveErr != nil {
@@ -77,32 +82,25 @@ func main() {
 
 	select {
 	case <-ctx.Done():
-		os.Exit(0)
+		return nil
 	case err := <-errChan:
-		fmt.Printf("serve error: %v\n", err)
+		return fmt.Errorf("serve error: %w", err)
 	}
 }
 
-func runStdinServer(s *server.MCPServer) error {
-	return server.ServeStdio(s)
-}
-
-func runHTTPServer(s *server.MCPServer) error {
+func serveHTTP(s *server.MCPServer) error {
 	config, err := parseHTTPServerConfig()
 	if err != nil {
 		return fmt.Errorf("failed to parse http server config: %v", err)
 	}
 
+	slog.Info("starting http server", "listen", config.Listen)
+
 	return server.NewStreamableHTTPServer(s).Start(config.Listen)
 }
 
 func newTBankClient(ctx context.Context, config investgo.Config) (*investgo.Client, error) {
-	client, err := investgo.NewClient(ctx, investgo.Config{
-		EndPoint:           "invest-public-api.tbank.ru:443",
-		Token:              "test",
-		AppName:            "tinkoff-mcp",
-		InsecureSkipVerify: true,
-	}, nil)
+	client, err := investgo.NewClient(ctx, config, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -123,9 +121,10 @@ func parseTBankClientConfig() (investgo.Config, error) {
 	const appName = "tbank-mcp"
 
 	return investgo.Config{
-		EndPoint: endpoint,
-		Token:    token,
-		AppName:  appName,
+		EndPoint:           endpoint,
+		Token:              token,
+		AppName:            appName,
+		InsecureSkipVerify: true,
 	}, nil
 }
 
