@@ -29,7 +29,7 @@ func NewGetBondCouponsTool(service BondService) server.ServerTool {
 			mcp.WithString(instrumentArgName, mcp.Description("Идентификатор инструмента (облигации)"), mcp.Required()),
 			mcp.WithString(fromArgName, mcp.Description("Начало периода"), mcp.Required()),
 			mcp.WithString(toArgName, mcp.Description("Конец периода"), mcp.Required()),
-			mcp.WithOutputSchema[GetBondCouponsReply](),
+			mcp.WithOutputSchema[getBondCouponsReply](),
 		),
 		Handler: func(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 			fromTime, err := time.Parse(time.RFC3339, req.GetString(fromArgName, ""))
@@ -52,7 +52,7 @@ func NewGetBondCouponsTool(service BondService) server.ServerTool {
 				return nil, fmt.Errorf("failed to get portfolio: %w", err)
 			}
 
-			reply := GetBondCouponsReply{Coupons: make([]BondCouponView, len(coupons))}
+			reply := getBondCouponsReply{Coupons: make([]bondCouponView, len(coupons))}
 			for i, coupon := range coupons {
 				reply.Coupons[i] = mapCoupon(&coupon)
 			}
@@ -62,28 +62,33 @@ func NewGetBondCouponsTool(service BondService) server.ServerTool {
 	}
 }
 
-type BondCouponView struct {
+type getBondCouponsReply struct {
+	Coupons []bondCouponView `json:"coupons"`
+}
+
+type bondCouponView struct {
 	FIGI             string    `json:"figi"`
 	CouponDate       time.Time `json:"couponDate"`
 	CouponStartDate  time.Time `json:"couponStartDate"`
 	CouponEndDate    time.Time `json:"couponEndDate"`
 	CouponNumber     int       `json:"couponNumber"`
 	CouponPeriodDays int32     `json:"couponPeriodDays"`
-	OneBondPay       string    `json:"oneBondPay"`
+	OneBondPay       moneyView `json:"oneBondPay"`
 }
 
-func mapCoupon(c *instrument.BondCoupon) BondCouponView {
-	return BondCouponView{
+type moneyView struct {
+	IntPart     int64 `json:"integerPart"`
+	DecimalPart int32 `json:"decimalPart"`
+}
+
+func mapCoupon(c *instrument.BondCoupon) bondCouponView {
+	return bondCouponView{
 		FIGI:             c.FIGI,
 		CouponDate:       c.CouponDate,
 		CouponStartDate:  c.CouponStartDate,
 		CouponEndDate:    c.CouponEndDate,
 		CouponNumber:     c.CouponNumber,
 		CouponPeriodDays: c.CouponPeriodDays,
-		OneBondPay:       c.OneBondPay.String(),
+		OneBondPay:       moneyView(c.OneBondPay),
 	}
-}
-
-type GetBondCouponsReply struct {
-	Coupons []BondCouponView `json:"coupons"`
 }

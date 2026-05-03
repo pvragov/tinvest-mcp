@@ -23,7 +23,7 @@ func NewGetPortfolio(service PortfolioService) server.ServerTool {
 			"get-portfolio",
 			mcp.WithDescription("Позволяет получить портфель пользователя по номеру счета"),
 			mcp.WithString(accountIDArgName, mcp.Description("Идентификатор счета"), mcp.Required()),
-			mcp.WithOutputSchema[GetUserPortfolioReply](),
+			mcp.WithOutputSchema[getUserPortfolioReply](),
 		),
 		Handler: func(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 			p, err := service.GetPortfolio(ctx, invest.Ref{ID: req.GetString(accountIDArgName, "")})
@@ -31,23 +31,23 @@ func NewGetPortfolio(service PortfolioService) server.ServerTool {
 				return nil, fmt.Errorf("failed to get portfolio: %w", err)
 			}
 
-			return mcp.NewToolResultJSON(GetUserPortfolioReply{
+			return mcp.NewToolResultJSON(getUserPortfolioReply{
 				Portfolio: mapPortfolio(p),
 			})
 		},
 	}
 }
 
-type GetUserPortfolioReply struct {
-	Portfolio PortfolioView `json:"portfolio"`
+type getUserPortfolioReply struct {
+	Portfolio portfolioView `json:"portfolio"`
 }
 
-type PortfolioView struct {
+type portfolioView struct {
 	AccountID string         `json:"accountID"`
-	Positions []PositionView `json:"positions"`
+	Positions []positionView `json:"positions"`
 }
 
-type PositionView struct {
+type positionView struct {
 	InstrumentID string          `json:"instrumentID"`
 	FIGI         string          `json:"FIGI"`
 	Quantity     int64           `json:"quantity"`
@@ -56,14 +56,14 @@ type PositionView struct {
 	ClassCode    string          `json:"classCode"`
 }
 
-func mapPortfolio(p *invest.Portfolio) PortfolioView {
-	view := PortfolioView{
+func mapPortfolio(p *invest.Portfolio) portfolioView {
+	view := portfolioView{
 		AccountID: p.Account.ID,
-		Positions: make([]PositionView, len(p.Positions)),
+		Positions: make([]positionView, len(p.Positions)),
 	}
 
 	for i, pos := range p.Positions {
-		view.Positions[i] = PositionView{
+		view.Positions[i] = positionView{
 			InstrumentID: pos.ID,
 			FIGI:         pos.FIGI,
 			Quantity:     pos.Quantity,
