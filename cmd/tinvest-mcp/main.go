@@ -110,12 +110,12 @@ func newTBankClient(ctx context.Context, config investgo.Config) (*investgo.Clie
 }
 
 func parseTBankClientConfig() (investgo.Config, error) {
-	token := os.Getenv("TBANK_INVEST_API_TOKEN")
+	token := os.Getenv("TBANK_INVEST_MCP_API_TOKEN")
 	if token == "" {
 		return investgo.Config{}, fmt.Errorf("tbank token must not be empty")
 	}
 
-	endpoint := os.Getenv("TBANK_INVEST_API_ENDPOINT")
+	endpoint := os.Getenv("TBANK_INVEST_MCP_API_ENDPOINT")
 	if endpoint == "" {
 		endpoint = "invest-public-api.tbank.ru:443"
 	}
