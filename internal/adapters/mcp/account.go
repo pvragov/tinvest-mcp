@@ -4,14 +4,14 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/pvragov/tinvest-mcp/internal/model/user"
+	"github.com/pvragov/tinvest-mcp/internal/model/invest"
 
 	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/mark3labs/mcp-go/server"
 )
 
 type UserAccountService interface {
-	GetUserAccounts(ctx context.Context, params user.GetUserAccountParams) ([]user.Account, error)
+	GetUserAccounts(ctx context.Context, params invest.GetUserAccountParams) ([]invest.Account, error)
 }
 
 func NewGetUserAccountsTool(service UserAccountService) server.ServerTool {
@@ -27,16 +27,16 @@ func NewGetUserAccountsTool(service UserAccountService) server.ServerTool {
 		Handler: func(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 			statusArg := req.GetString(accountStatusArgName, "")
 
-			var status user.AccountStatus
+			var status invest.AccountStatus
 			if statusArg != "" {
 				var err error
-				status, err = user.AccountStatusString(statusArg)
+				status, err = invest.AccountStatusString(statusArg)
 				if err != nil {
 					return nil, fmt.Errorf("invalid account status: %w", err)
 				}
 			}
 
-			accounts, err := service.GetUserAccounts(ctx, user.GetUserAccountParams{
+			accounts, err := service.GetUserAccounts(ctx, invest.GetUserAccountParams{
 				Status: status,
 			})
 			if err != nil {
@@ -64,7 +64,7 @@ type AccountView struct {
 	Name string `json:"name"`
 }
 
-func mapUserAccount(a user.Account) AccountView {
+func mapUserAccount(a invest.Account) AccountView {
 	return AccountView{
 		ID:   a.ID,
 		Name: a.Name,

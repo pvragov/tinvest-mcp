@@ -5,15 +5,14 @@ import (
 	"fmt"
 
 	"github.com/pvragov/tinvest-mcp/internal/model/instrument"
-	"github.com/pvragov/tinvest-mcp/internal/model/portfolio"
-	"github.com/pvragov/tinvest-mcp/internal/model/user"
+	"github.com/pvragov/tinvest-mcp/internal/model/invest"
 
 	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/mark3labs/mcp-go/server"
 )
 
 type PortfolioService interface {
-	GetPortfolio(ctx context.Context, ref user.Ref) (*portfolio.Portfolio, error)
+	GetPortfolio(ctx context.Context, ref invest.Ref) (*invest.Portfolio, error)
 }
 
 func NewGetPortfolio(service PortfolioService) server.ServerTool {
@@ -27,7 +26,7 @@ func NewGetPortfolio(service PortfolioService) server.ServerTool {
 			mcp.WithOutputSchema[GetUserPortfolioReply](),
 		),
 		Handler: func(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-			p, err := service.GetPortfolio(ctx, user.Ref{ID: req.GetString(accountIDArgName, "")})
+			p, err := service.GetPortfolio(ctx, invest.Ref{ID: req.GetString(accountIDArgName, "")})
 			if err != nil {
 				return nil, fmt.Errorf("failed to get portfolio: %w", err)
 			}
@@ -57,7 +56,7 @@ type PositionView struct {
 	ClassCode    string          `json:"classCode"`
 }
 
-func mapPortfolio(p *portfolio.Portfolio) PortfolioView {
+func mapPortfolio(p *invest.Portfolio) PortfolioView {
 	view := PortfolioView{
 		AccountID: p.Account.ID,
 		Positions: make([]PositionView, len(p.Positions)),
