@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/pvragov/tinvest-mcp/internal/model/instrument"
-	"github.com/pvragov/tinvest-mcp/internal/model/portfolio"
+	"github.com/pvragov/tinvest-mcp/internal/model/invest"
 
 	"opensource.tbank.ru/invest/invest-go/investgo"
 	proto "opensource.tbank.ru/invest/invest-go/proto"
@@ -21,13 +21,13 @@ func NewPortfolioAdapter(client *investgo.OperationsServiceClient) *PortfolioAda
 	}
 }
 
-func (a *PortfolioAdapter) FetchPortfolio(ctx context.Context, p *portfolio.Portfolio) error {
+func (a *PortfolioAdapter) FetchPortfolio(ctx context.Context, p *invest.Portfolio) error {
 	resp, err := a.client.GetPortfolio(p.Account.ID, proto.PortfolioRequest_RUB)
 	if err != nil {
 		return fmt.Errorf("failed to exec get portfolio rpc: %w", err)
 	}
 
-	p.Positions = make([]portfolio.Position, len(resp.GetPositions()))
+	p.Positions = make([]invest.PortfolioPosition, len(resp.GetPositions()))
 	for i, pos := range resp.GetPositions() {
 		p.Positions[i] = mapProtoPortfolioPosition(pos)
 	}
@@ -35,8 +35,8 @@ func (a *PortfolioAdapter) FetchPortfolio(ctx context.Context, p *portfolio.Port
 	return nil
 }
 
-func mapProtoPortfolioPosition(p *proto.PortfolioPosition) portfolio.Position {
-	return portfolio.Position{
+func mapProtoPortfolioPosition(p *proto.PortfolioPosition) invest.PortfolioPosition {
+	return invest.PortfolioPosition{
 		ID:         p.InstrumentUid,
 		FIGI:       p.Figi,
 		Quantity:   p.Quantity.Units,

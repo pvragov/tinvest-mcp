@@ -1,23 +1,22 @@
-package portfolio
+package invest
 
 import (
 	"context"
 
 	"github.com/pvragov/tinvest-mcp/internal/model/instrument"
-	"github.com/pvragov/tinvest-mcp/internal/model/user"
 )
 
-type Fetcher interface {
+type PortfolioFetcher interface {
 	// FetchPortfolio fetches a portfolio by the specified account.
 	FetchPortfolio(ctx context.Context, p *Portfolio) error
 }
 
 type Portfolio struct {
-	Account   user.Ref
-	Positions []Position
+	Account   Ref
+	Positions []PortfolioPosition
 }
 
-type Position struct {
+type PortfolioPosition struct {
 	ID         string
 	FIGI       string
 	Quantity   int64
@@ -26,21 +25,21 @@ type Position struct {
 	ClassCode  string
 }
 
-type Repository interface {
-	Fetcher
+type PortfolioRepository interface {
+	PortfolioFetcher
 }
 
-type Registry struct {
-	portfolios Repository
+type PortfolioRegistry struct {
+	portfolios PortfolioRepository
 }
 
-func NewRegistry(portfolios Repository) *Registry {
-	return &Registry{
+func NewPortfolioRegistry(portfolios PortfolioRepository) *PortfolioRegistry {
+	return &PortfolioRegistry{
 		portfolios: portfolios,
 	}
 }
 
-func (r *Registry) GetPortfolio(ctx context.Context, ref user.Ref) (*Portfolio, error) {
+func (r *PortfolioRegistry) GetPortfolio(ctx context.Context, ref Ref) (*Portfolio, error) {
 	p := &Portfolio{Account: ref}
 	if err := r.portfolios.FetchPortfolio(ctx, p); err != nil {
 		return nil, err

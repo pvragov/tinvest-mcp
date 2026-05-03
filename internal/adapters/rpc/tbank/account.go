@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/pvragov/tinvest-mcp/internal/model/user"
+	"github.com/pvragov/tinvest-mcp/internal/model/invest"
 
 	"opensource.tbank.ru/invest/invest-go/investgo"
 	proto "opensource.tbank.ru/invest/invest-go/proto"
@@ -20,14 +20,14 @@ func NewAccountAdapter(client *investgo.UsersServiceClient) *AccountAdapter {
 	}
 }
 
-func (a *AccountAdapter) FilterAccounts(_ context.Context, params user.FilterParams) ([]user.Account, error) {
+func (a *AccountAdapter) FilterAccounts(_ context.Context, params invest.FilterParams) ([]invest.Account, error) {
 	resp, err := a.client.GetAccounts(new(mapAccountStatus[params.AccountStatus]))
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to exec get accounts rpc: %w", err)
 	}
 
-	ret := make([]user.Account, len(resp.Accounts))
+	ret := make([]invest.Account, len(resp.Accounts))
 	for i := range resp.Accounts {
 		ret[i] = mapProtoAccount(resp.Accounts[i])
 	}
@@ -36,21 +36,21 @@ func (a *AccountAdapter) FilterAccounts(_ context.Context, params user.FilterPar
 }
 
 var (
-	mapAccountStatus = map[user.AccountStatus]proto.AccountStatus{
-		user.AccountStatusOpen:        proto.AccountStatus_ACCOUNT_STATUS_OPEN,
-		user.AccountStatusClosed:      proto.AccountStatus_ACCOUNT_STATUS_CLOSED,
-		user.AccountStatusNew:         proto.AccountStatus_ACCOUNT_STATUS_NEW,
-		user.AccountStatusUnspecified: proto.AccountStatus_ACCOUNT_STATUS_ALL,
+	mapAccountStatus = map[invest.AccountStatus]proto.AccountStatus{
+		invest.AccountStatusOpen:        proto.AccountStatus_ACCOUNT_STATUS_OPEN,
+		invest.AccountStatusClosed:      proto.AccountStatus_ACCOUNT_STATUS_CLOSED,
+		invest.AccountStatusNew:         proto.AccountStatus_ACCOUNT_STATUS_NEW,
+		invest.AccountStatusUnspecified: proto.AccountStatus_ACCOUNT_STATUS_ALL,
 	}
-	mapProtoAccountStatus = map[proto.AccountStatus]user.AccountStatus{
-		proto.AccountStatus_ACCOUNT_STATUS_OPEN:   user.AccountStatusOpen,
-		proto.AccountStatus_ACCOUNT_STATUS_CLOSED: user.AccountStatusClosed,
-		proto.AccountStatus_ACCOUNT_STATUS_NEW:    user.AccountStatusNew,
+	mapProtoAccountStatus = map[proto.AccountStatus]invest.AccountStatus{
+		proto.AccountStatus_ACCOUNT_STATUS_OPEN:   invest.AccountStatusOpen,
+		proto.AccountStatus_ACCOUNT_STATUS_CLOSED: invest.AccountStatusClosed,
+		proto.AccountStatus_ACCOUNT_STATUS_NEW:    invest.AccountStatusNew,
 	}
 )
 
-func mapProtoAccount(a *proto.Account) user.Account {
-	return user.Account{
+func mapProtoAccount(a *proto.Account) invest.Account {
+	return invest.Account{
 		ID:     a.Id,
 		Name:   a.Name,
 		Status: mapProtoAccountStatus[a.Status],

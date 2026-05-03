@@ -1,4 +1,4 @@
-package user
+package invest
 
 import "context"
 
@@ -26,7 +26,7 @@ type FilterParams struct {
 
 type AccountStatus int
 
-//go:generate go run github.com/dmarkham/enumer -type=AccountStatus -text -json -transform=lower -trimprefix=AccountStatus -output=status_enum.go
+//go:generate go run github.com/dmarkham/enumer -type=AccountStatus -text -json -transform=lower -trimprefix=AccountStatus -output=account_status_enum.go
 const (
 	AccountStatusUnspecified AccountStatus = iota
 	AccountStatusOpen

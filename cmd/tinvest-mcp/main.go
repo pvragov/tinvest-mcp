@@ -12,8 +12,7 @@ import (
 	"github.com/pvragov/tinvest-mcp/internal/adapters/mcp"
 	"github.com/pvragov/tinvest-mcp/internal/adapters/rpc/tbank"
 	"github.com/pvragov/tinvest-mcp/internal/model/instrument"
-	"github.com/pvragov/tinvest-mcp/internal/model/portfolio"
-	"github.com/pvragov/tinvest-mcp/internal/model/user"
+	"github.com/pvragov/tinvest-mcp/internal/model/invest"
 
 	"github.com/mark3labs/mcp-go/server"
 	"opensource.tbank.ru/invest/invest-go/investgo"
@@ -57,8 +56,8 @@ func main() {
 	)
 
 	s.AddTools(
-		mcp.NewGetUserAccountsTool(user.NewAccountRegistry(accountAdapter)),
-		mcp.NewGetPortfolio(portfolio.NewRegistry(portfolioAdapter)),
+		mcp.NewGetUserAccountsTool(invest.NewAccountRegistry(accountAdapter)),
+		mcp.NewGetPortfolio(invest.NewPortfolioRegistry(portfolioAdapter)),
 		mcp.NewGetBondCouponsTool(instrument.NewBondRegistry(bondsAdapter)),
 	)
 
