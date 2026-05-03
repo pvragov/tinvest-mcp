@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	"log/slog"
 	"net/netip"
@@ -37,15 +38,9 @@ func main() {
 		os.Exit(1)
 	}
 
-	client, err := NewTBankClient(ctx, clientConfig)
+	client, err := newTBankClient(ctx, clientConfig)
 	if err != nil {
 		slog.Error("failed to create tbank client: %v", "error", err)
-		os.Exit(1)
-	}
-
-	serverConfig, err := parseMCPServerConfig()
-	if err != nil {
-		slog.Error("failed to parse mcp server config", "error", err)
 		os.Exit(1)
 	}
 
@@ -61,11 +56,22 @@ func main() {
 		mcp.NewGetBondCouponsTool(instrument.NewBondRegistry(bondsAdapter)),
 	)
 
+	var httpDebugServerEnable bool // use http only for debug
+	flag.BoolVar(&httpDebugServerEnable, "http", false, "run mcp over http")
+	flag.Parse()
+
 	errChan := make(chan error)
 
 	go func() {
-		if err := server.NewStreamableHTTPServer(s).Start(serverConfig.Listen); err != nil {
-			errChan <- err
+		var serveErr error
+		if httpDebugServerEnable {
+			serveErr = runHTTPServer(s)
+		} else {
+			serveErr = runStdinServer(s)
+		}
+
+		if serveErr != nil {
+			errChan <- serveErr
 		}
 	}()
 
@@ -77,7 +83,20 @@ func main() {
 	}
 }
 
-func NewTBankClient(ctx context.Context, config investgo.Config) (*investgo.Client, error) {
+func runStdinServer(s *server.MCPServer) error {
+	return server.ServeStdio(s)
+}
+
+func runHTTPServer(s *server.MCPServer) error {
+	config, err := parseHTTPServerConfig()
+	if err != nil {
+		return fmt.Errorf("failed to parse http server config: %v", err)
+	}
+
+	return server.NewStreamableHTTPServer(s).Start(config.Listen)
+}
+
+func newTBankClient(ctx context.Context, config investgo.Config) (*investgo.Client, error) {
 	client, err := investgo.NewClient(ctx, investgo.Config{
 		EndPoint:           "invest-public-api.tbank.ru:443",
 		Token:              "test",
@@ -110,21 +129,21 @@ func parseTBankClientConfig() (investgo.Config, error) {
 	}, nil
 }
 
-func parseMCPServerConfig() (mcpServerConfig, error) {
+func parseHTTPServerConfig() (httpServerConfig, error) {
 	addr, err := netip.ParseAddrPort(os.Getenv("TBANK_INVEST_MCP_SERVER_LISTEN"))
 	if err != nil {
-		return mcpServerConfig{}, fmt.Errorf("failed to parse listen addr: %v", err)
+		return httpServerConfig{}, fmt.Errorf("failed to parse listen addr: %v", err)
 	}
 
 	if addr.Port() == 0 {
-		return mcpServerConfig{}, fmt.Errorf("port must not be 0")
+		return httpServerConfig{}, fmt.Errorf("port must not be 0")
 	}
 
-	return mcpServerConfig{
+	return httpServerConfig{
 		Listen: addr.String(),
 	}, nil
 }
 
-type mcpServerConfig struct {
+type httpServerConfig struct {
 	Listen string
 }
