@@ -8,14 +8,14 @@ import (
 	"net/netip"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 
+	"github.com/mark3labs/mcp-go/server"
 	"github.com/pvragov/tinvest-mcp/internal/adapters/mcp"
 	"github.com/pvragov/tinvest-mcp/internal/adapters/rpc/tbank"
 	"github.com/pvragov/tinvest-mcp/internal/model/instrument"
 	"github.com/pvragov/tinvest-mcp/internal/model/invest"
-
-	"github.com/mark3labs/mcp-go/server"
 	"opensource.tbank.ru/invest/invest-go/investgo"
 )
 
@@ -118,13 +118,25 @@ func parseTBankClientConfig() (investgo.Config, error) {
 		endpoint = "invest-public-api.tbank.ru:443"
 	}
 
+	var (
+		skipVerify bool
+		err        error
+	)
+	if skipVerifyParam := os.Getenv("TBANK_INVEST_MCP_TLS_SKIP_VERIFY"); skipVerifyParam != "" {
+		skipVerify, err = strconv.ParseBool(skipVerifyParam)
+		if err != nil {
+			return investgo.Config{}, fmt.Errorf("failed to parse skip verify param: %v", err)
+		}
+	}
+
 	const appName = "tbank-mcp"
 
 	return investgo.Config{
 		EndPoint:           endpoint,
 		Token:              token,
 		AppName:            appName,
-		InsecureSkipVerify: true,
+		TLSCACertFile:      os.Getenv("TBANK_INVEST_MCP_TLS_CA_CERT_PATH"),
+		InsecureSkipVerify: skipVerify,
 	}, nil
 }
 
