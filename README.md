@@ -2,6 +2,9 @@
 
 MCP сервер для работы с API tbank инвестиций
 
+## Зависимости
+ - Go  1.26+
+
 ## Установка 
 
 ```shell
@@ -34,3 +37,21 @@ tinvest-mcp
 ```
 
 В качестве транспорта используется stdin
+
+
+## Конфигурация для AI агентов 
+
+```json
+{
+  "mcpServers": {
+    "tinvest": {
+      "command": "tinvest-mcp",
+      "args": [],
+      "env": {
+        "TBANK_INVEST_MCP_API_TOKEN": "tbank token",
+        "TBANK_INVEST_MCP_TLS_CA_CERT_PATH": "путь до сертификата"
+      }
+    }
+  }
+}
+```
