@@ -26,16 +26,17 @@ type BondCoupon struct {
 }
 
 type Money struct {
-	IntPart     int64
-	DecimalPart int32
+	Units      int64
+	MinorUnits int32
+	Currency   string
 }
 
 func (m *Money) String() string {
-	if m.IntPart >= 0 {
-		return fmt.Sprintf("%d.%d", m.IntPart, m.DecimalPart)
+	if m.Units >= 0 {
+		return fmt.Sprintf("%d.%d", m.Units, m.MinorUnits)
 	}
 
-	return fmt.Sprintf("-%d.%d", m.IntPart, m.DecimalPart)
+	return fmt.Sprintf("-%d.%d", m.Units, m.MinorUnits)
 }
 
 type Repository interface {
