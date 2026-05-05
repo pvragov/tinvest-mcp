@@ -46,8 +46,9 @@ func mapProtoCoupon(c *proto.Coupon) instrument.BondCoupon {
 		CouponNumber:     int(c.CouponNumber),
 		CouponPeriodDays: c.CouponPeriod,
 		OneBondPay: instrument.Money{
-			IntPart:     c.PayOneBond.Units,
-			DecimalPart: c.PayOneBond.Nano,
+			Units:      c.PayOneBond.Units,
+			MinorUnits: c.PayOneBond.Nano / 1_000_0000,
+			Currency:   c.PayOneBond.Currency,
 		},
 	}
 }
