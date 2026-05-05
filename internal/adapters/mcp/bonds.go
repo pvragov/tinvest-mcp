@@ -27,8 +27,8 @@ func NewGetBondCouponsTool(service BondService) server.ServerTool {
 			"get-bond-coupons",
 			mcp.WithDescription("Позволяет получить список купонов для облигации за указанный период"),
 			mcp.WithString(instrumentArgName, mcp.Description("Идентификатор инструмента (облигации)"), mcp.Required()),
-			mcp.WithString(fromArgName, mcp.Description("Начало периода"), mcp.Required()),
-			mcp.WithString(toArgName, mcp.Description("Конец периода"), mcp.Required()),
+			mcp.WithString(fromArgName, mcp.Description("Начало периода в формате YYYY-MM-DDTHH:MM:SSZ"), mcp.Required()),
+			mcp.WithString(toArgName, mcp.Description("Конец периода в формате YYYY-MM-DDTHH:MM:SSZ"), mcp.Required()),
 			mcp.WithOutputSchema[getBondCouponsReply](),
 		),
 		Handler: func(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
@@ -77,8 +77,9 @@ type bondCouponView struct {
 }
 
 type moneyView struct {
-	IntPart     int64 `json:"integerPart"`
-	DecimalPart int32 `json:"decimalPart"`
+	Unit      int64  `json:"unit"`
+	MinorUnit int32  `json:"minorUnit"`
+	Currency  string `json:"currency"`
 }
 
 func mapCoupon(c *instrument.BondCoupon) bondCouponView {
@@ -89,6 +90,10 @@ func mapCoupon(c *instrument.BondCoupon) bondCouponView {
 		CouponEndDate:    c.CouponEndDate,
 		CouponNumber:     c.CouponNumber,
 		CouponPeriodDays: c.CouponPeriodDays,
-		OneBondPay:       moneyView(c.OneBondPay),
+		OneBondPay: moneyView{
+			Unit:      c.OneBondPay.Units,
+			MinorUnit: c.OneBondPay.MinorUnits,
+			Currency:  c.OneBondPay.Currency,
+		},
 	}
 }
