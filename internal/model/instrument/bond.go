@@ -7,6 +7,7 @@ import (
 )
 
 type BondCouponsFetcher interface {
+	// FetchBondCoupons fetches the bound coupons by the specified params.
 	FetchBondCoupons(ctx context.Context, bond BondRef, params FetchBondCouponParams) ([]BondCoupon, error)
 }
 
@@ -15,8 +16,24 @@ type FetchBondCouponParams struct {
 	To   time.Time
 }
 
+type BondFetcher interface {
+	// FetchBond fetches bond by id.
+	FetchBond(ctx context.Context, bond *Bond) error
+}
+
+type Bond struct {
+	ID              string // Instrument ID
+	Name            string
+	ISIN            string
+	Currency        string
+	HasAmortization bool
+}
+
+type BondRef struct {
+	ID string // Instrument ID
+}
+
 type BondCoupon struct {
-	FIGI             string
 	CouponDate       time.Time
 	CouponNumber     int
 	CouponPeriodDays int32
@@ -38,6 +55,7 @@ func (m *Money) String() string {
 }
 
 type Repository interface {
+	BondFetcher
 	BondCouponsFetcher
 }
 
@@ -75,6 +93,6 @@ func (p *GetBondCouponsParams) Validate() error {
 	return nil
 }
 
-type BondRef struct {
-	ID string
+func (r *BondRegistry) GetBond(ctx context.Context, bond *Bond) error {
+	return r.bonds.FetchBond(ctx, bond)
 }

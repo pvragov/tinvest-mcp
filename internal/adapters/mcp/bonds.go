@@ -13,6 +13,7 @@ import (
 
 type BondService interface {
 	GetBondCoupons(ctx context.Context, bond instrument.BondRef, params instrument.GetBondCouponsParams) ([]instrument.BondCoupon, error)
+	GetBond(ctx context.Context, bond *instrument.Bond) error
 }
 
 func NewGetBondCouponsTool(service BondService) server.ServerTool {
@@ -49,7 +50,7 @@ func NewGetBondCouponsTool(service BondService) server.ServerTool {
 				To:   toTime,
 			})
 			if err != nil {
-				return nil, fmt.Errorf("failed to get portfolio: %w", err)
+				return nil, fmt.Errorf("failed to get bond coupons: %w", err)
 			}
 
 			reply := getBondCouponsReply{Coupons: make([]bondCouponView, len(coupons))}
@@ -67,7 +68,6 @@ type getBondCouponsReply struct {
 }
 
 type bondCouponView struct {
-	FIGI             string    `json:"figi"`
 	CouponDate       time.Time `json:"couponDate"`
 	CouponNumber     int       `json:"couponNumber"`
 	CouponPeriodDays int32     `json:"couponPeriodDays"`
@@ -82,7 +82,6 @@ type moneyView struct {
 
 func mapCoupon(c *instrument.BondCoupon) bondCouponView {
 	return bondCouponView{
-		FIGI:             c.FIGI,
 		CouponDate:       c.CouponDate,
 		CouponNumber:     c.CouponNumber,
 		CouponPeriodDays: c.CouponPeriodDays,
@@ -92,4 +91,33 @@ func mapCoupon(c *instrument.BondCoupon) bondCouponView {
 			Currency:  c.OneBondPay.Currency,
 		},
 	}
+}
+
+func NewGetBondTool(service BondService) server.ServerTool {
+	const instrumentArgName = "instrument-id"
+
+	return server.ServerTool{
+		Tool: mcp.NewTool(
+			"tbank-get-bond",
+			mcp.WithDescription("Позволяет получить общую информацию по облигации"),
+			mcp.WithString(instrumentArgName, mcp.Description("Идентификатор инструмента (облигации)"), mcp.Required()),
+			mcp.WithOutputSchema[getBondReply](),
+		),
+		Handler: func(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+			bond := &instrument.Bond{ID: req.GetString(instrumentArgName, "")}
+			if err := service.GetBond(ctx, bond); err != nil {
+				return nil, fmt.Errorf("failed to get bond: %w", err)
+			}
+
+			return mcp.NewToolResultJSON(getBondReply(*bond))
+		},
+	}
+}
+
+type getBondReply struct {
+	ID              string `json:"instrumentID"`
+	Name            string `json:"name"`
+	ISIN            string `json:"isin"`
+	Currency        string `json:"currency"`
+	HasAmortization bool   `json:"hasAmortization"`
 }
