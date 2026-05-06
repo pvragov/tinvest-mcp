@@ -2,6 +2,7 @@ package tbank
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/pvragov/tinvest-mcp/internal/model/instrument"
 
@@ -26,7 +27,7 @@ func (a *InstrumentAdapter) FetchBondCoupons(
 ) ([]instrument.BondCoupon, error) {
 	resp, err := a.client.GetBondCoupons(bond.ID, params.From, params.To)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to exec get bond coupons rpc: %w", err)
 	}
 
 	ret := make([]instrument.BondCoupon, len(resp.Events))
@@ -39,7 +40,6 @@ func (a *InstrumentAdapter) FetchBondCoupons(
 
 func mapProtoCoupon(c *proto.Coupon) instrument.BondCoupon {
 	return instrument.BondCoupon{
-		FIGI:             c.Figi,
 		CouponDate:       c.CouponDate.AsTime(),
 		CouponNumber:     int(c.CouponNumber),
 		CouponPeriodDays: c.CouponPeriod,
@@ -49,4 +49,23 @@ func mapProtoCoupon(c *proto.Coupon) instrument.BondCoupon {
 			Currency:   c.PayOneBond.Currency,
 		},
 	}
+}
+
+func (a *InstrumentAdapter) FetchBond(_ context.Context, bond *instrument.Bond) error {
+	resp, err := a.client.BondByUid(bond.ID)
+	if err != nil {
+		return fmt.Errorf("failed to exec bond by uid rpc: %w", err)
+	}
+
+	i := resp.GetInstrument()
+
+	*bond = instrument.Bond{
+		ID:              bond.ID,
+		Name:            i.GetName(),
+		ISIN:            i.GetIsin(),
+		Currency:        i.GetCurrency(),
+		HasAmortization: i.GetAmortizationFlag(),
+	}
+
+	return nil
 }
