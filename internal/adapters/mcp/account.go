@@ -19,7 +19,7 @@ func NewGetUserAccountsTool(service UserAccountService) server.ServerTool {
 
 	return server.ServerTool{
 		Tool: mcp.NewTool(
-			"get-user-accounts",
+			"tbank-get-user-accounts",
 			mcp.WithDescription("Позволяет получить список счетов пользователя"),
 			mcp.WithString("status", mcp.Enum("open", "closed", "new")),
 			mcp.WithOutputSchema[getUserAccountToolReply](),

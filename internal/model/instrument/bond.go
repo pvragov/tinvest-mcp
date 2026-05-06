@@ -18,8 +18,6 @@ type FetchBondCouponParams struct {
 type BondCoupon struct {
 	FIGI             string
 	CouponDate       time.Time
-	CouponStartDate  time.Time
-	CouponEndDate    time.Time
 	CouponNumber     int
 	CouponPeriodDays int32
 	OneBondPay       Money

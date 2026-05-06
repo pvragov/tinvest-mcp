@@ -41,8 +41,6 @@ func mapProtoCoupon(c *proto.Coupon) instrument.BondCoupon {
 	return instrument.BondCoupon{
 		FIGI:             c.Figi,
 		CouponDate:       c.CouponDate.AsTime(),
-		CouponStartDate:  c.CouponStartDate.AsTime(),
-		CouponEndDate:    c.CouponEndDate.AsTime(),
 		CouponNumber:     int(c.CouponNumber),
 		CouponPeriodDays: c.CouponPeriod,
 		OneBondPay: instrument.Money{
