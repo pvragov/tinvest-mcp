@@ -50,20 +50,24 @@ func run() error {
 	}
 
 	var (
-		accountAdapter   = tbank.NewAccountAdapter(client.NewUsersServiceClient())
-		portfolioAdapter = tbank.NewPortfolioAdapter(client.NewOperationsServiceClient())
-		bondsAdapter     = tbank.NewInstrumentAdapter(client.NewInstrumentsServiceClient())
+		accountAdapter    = tbank.NewAccountAdapter(client.NewUsersServiceClient())
+		portfolioAdapter  = tbank.NewPortfolioAdapter(client.NewOperationsServiceClient())
+		instrumentAdapter = tbank.NewInstrumentAdapter(client.NewInstrumentsServiceClient())
 
 		accountRegistry   = invest.NewAccountRegistry(accountAdapter)
 		portfolioRegistry = invest.NewPortfolioRegistry(portfolioAdapter)
-		bondRegistry      = instrument.NewBondRegistry(bondsAdapter)
+		bondRegistry      = instrument.NewBondRegistry(instrumentAdapter)
+		shareRegistry     = instrument.NewShareRegistry(instrumentAdapter)
 	)
 
 	s.AddTools(
 		mcp.NewGetUserAccountsTool(accountRegistry),
 		mcp.NewGetPortfolio(portfolioRegistry),
+		// Bond tools:
 		mcp.NewGetBondTool(bondRegistry),
 		mcp.NewGetBondCouponsTool(bondRegistry),
+		// Share tools:
+		mcp.NewGetShareTool(shareRegistry),
 	)
 
 	var httpDebugServerEnable bool // use http only for debug
