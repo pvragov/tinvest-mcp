@@ -24,7 +24,7 @@ func NewGetBondCouponsTool(service BondService) server.ServerTool {
 
 	return server.ServerTool{
 		Tool: mcp.NewTool(
-			"get-bond-coupons",
+			"tbank-get-bond-coupons",
 			mcp.WithDescription("Позволяет получить список купонов для облигации за указанный период"),
 			mcp.WithString(instrumentArgName, mcp.Description("Идентификатор инструмента (облигации)"), mcp.Required()),
 			mcp.WithString(fromArgName, mcp.Description("Начало периода в формате YYYY-MM-DDTHH:MM:SSZ"), mcp.Required()),
@@ -69,8 +69,6 @@ type getBondCouponsReply struct {
 type bondCouponView struct {
 	FIGI             string    `json:"figi"`
 	CouponDate       time.Time `json:"couponDate"`
-	CouponStartDate  time.Time `json:"couponStartDate"`
-	CouponEndDate    time.Time `json:"couponEndDate"`
 	CouponNumber     int       `json:"couponNumber"`
 	CouponPeriodDays int32     `json:"couponPeriodDays"`
 	OneBondPay       moneyView `json:"oneBondPay"`
@@ -86,8 +84,6 @@ func mapCoupon(c *instrument.BondCoupon) bondCouponView {
 	return bondCouponView{
 		FIGI:             c.FIGI,
 		CouponDate:       c.CouponDate,
-		CouponStartDate:  c.CouponStartDate,
-		CouponEndDate:    c.CouponEndDate,
 		CouponNumber:     c.CouponNumber,
 		CouponPeriodDays: c.CouponPeriodDays,
 		OneBondPay: moneyView{

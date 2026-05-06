@@ -19,7 +19,7 @@ func NewGetPortfolio(service PortfolioService) server.ServerTool {
 
 	return server.ServerTool{
 		Tool: mcp.NewTool(
-			"get-portfolio",
+			"tbank-get-portfolio",
 			mcp.WithDescription("Позволяет получить портфель пользователя по номеру счета"),
 			mcp.WithString(accountIDArgName, mcp.Description("Идентификатор счета"), mcp.Required()),
 			mcp.WithOutputSchema[getUserPortfolioReply](),
