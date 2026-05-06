@@ -13,7 +13,7 @@ import (
 
 type BondService interface {
 	GetBondCoupons(ctx context.Context, bond instrument.BondRef, params instrument.GetBondCouponsParams) ([]instrument.BondCoupon, error)
-	GetBond(ctx context.Context, bond *instrument.Bond) error
+	GetBond(ctx context.Context, ref instrument.BondRef) (*instrument.Bond, error)
 }
 
 func NewGetBondCouponsTool(service BondService) server.ServerTool {
@@ -104,20 +104,27 @@ func NewGetBondTool(service BondService) server.ServerTool {
 			mcp.WithOutputSchema[getBondReply](),
 		),
 		Handler: func(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-			bond := &instrument.Bond{ID: req.GetString(instrumentArgName, "")}
-			if err := service.GetBond(ctx, bond); err != nil {
+			ref := instrument.BondRef{ID: req.GetString(instrumentArgName, "")}
+			bond, err := service.GetBond(ctx, ref)
+			if err != nil {
 				return nil, fmt.Errorf("failed to get bond: %w", err)
 			}
 
-			return mcp.NewToolResultJSON(getBondReply(*bond))
+			return mcp.NewToolResultJSON(getShareReply{
+				ID:       bond.ID,
+				Name:     bond.Name,
+				ISIN:     bond.ISIN,
+				Currency: bond.Currency,
+			})
 		},
 	}
 }
 
 type getBondReply struct {
-	ID              string `json:"instrumentID"`
-	Name            string `json:"name"`
-	ISIN            string `json:"isin"`
-	Currency        string `json:"currency"`
-	HasAmortization bool   `json:"hasAmortization"`
+	ID                string `json:"instrumentID"`
+	Name              string `json:"name"`
+	ISIN              string `json:"isin"`
+	Currency          string `json:"currency"`
+	HasAmortization   bool   `json:"hasAmortization"`
+	HasFloatingCoupon bool   `json:"hasFloatingCoupon"`
 }

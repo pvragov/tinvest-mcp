@@ -22,11 +22,12 @@ type BondFetcher interface {
 }
 
 type Bond struct {
-	ID              string // Instrument ID
-	Name            string
-	ISIN            string
-	Currency        string
-	HasAmortization bool
+	ID                string // Instrument ID
+	Name              string
+	ISIN              string
+	Currency          string
+	HasAmortization   bool
+	HasFloatingCoupon bool
 }
 
 type BondRef struct {
@@ -93,6 +94,11 @@ func (p *GetBondCouponsParams) Validate() error {
 	return nil
 }
 
-func (r *BondRegistry) GetBond(ctx context.Context, bond *Bond) error {
-	return r.bonds.FetchBond(ctx, bond)
+func (r *BondRegistry) GetBond(ctx context.Context, ref BondRef) (*Bond, error) {
+	bond := &Bond{ID: ref.ID}
+	if err := r.bonds.FetchBond(ctx, bond); err != nil {
+		return nil, fmt.Errorf("failed to fetch bond: %w", err)
+	}
+
+	return bond, nil
 }

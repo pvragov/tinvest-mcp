@@ -57,14 +57,31 @@ func (a *InstrumentAdapter) FetchBond(_ context.Context, bond *instrument.Bond) 
 		return fmt.Errorf("failed to exec bond by uid rpc: %w", err)
 	}
 
-	i := resp.GetInstrument()
-
+	in := resp.GetInstrument()
 	*bond = instrument.Bond{
-		ID:              bond.ID,
-		Name:            i.GetName(),
-		ISIN:            i.GetIsin(),
-		Currency:        i.GetCurrency(),
-		HasAmortization: i.GetAmortizationFlag(),
+		ID:                bond.ID,
+		Name:              in.GetName(),
+		ISIN:              in.GetIsin(),
+		Currency:          in.GetCurrency(),
+		HasAmortization:   in.GetAmortizationFlag(),
+		HasFloatingCoupon: in.GetFloatingCouponFlag(),
+	}
+
+	return nil
+}
+
+func (a *InstrumentAdapter) FetchShare(_ context.Context, share *instrument.Share) error {
+	resp, err := a.client.ShareByUid(share.ID)
+	if err != nil {
+		return fmt.Errorf("failed to exec share by uid rpc: %w", err)
+	}
+
+	in := resp.GetInstrument()
+	*share = instrument.Share{
+		ID:       share.ID,
+		Name:     in.GetName(),
+		ISIN:     in.GetIsin(),
+		Currency: in.GetCurrency(),
 	}
 
 	return nil
