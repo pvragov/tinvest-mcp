@@ -81,19 +81,20 @@ func run() error {
 		if httpDebugServerEnable {
 			serveErr = serveHTTP(s)
 		} else {
-			server.ServeStdio(s)
+			serveErr = server.ServeStdio(s)
 		}
 
-		if serveErr != nil {
-			errChan <- serveErr
-		}
+		errChan <- serveErr
 	}()
 
 	select {
 	case <-ctx.Done():
 		return nil
 	case err := <-errChan:
-		return fmt.Errorf("serve error: %w", err)
+		if err != nil {
+			return fmt.Errorf("serve error: %w", err)
+		}
+		return nil
 	}
 }
 
