@@ -48,11 +48,10 @@ type Money struct {
 }
 
 func (m *Money) String() string {
-	if m.Units >= 0 {
-		return fmt.Sprintf("%d.%d", m.Units, m.MinorUnits)
+	if m.MinorUnits < 0 {
+		return fmt.Sprintf("%d.%d", m.Units, m.MinorUnits*-1)
 	}
-
-	return fmt.Sprintf("-%d.%d", m.Units, m.MinorUnits)
+	return fmt.Sprintf("%d.%d", m.Units, m.MinorUnits)
 }
 
 type Repository interface {

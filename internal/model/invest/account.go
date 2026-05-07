@@ -8,11 +8,11 @@ type Account struct {
 	Status AccountStatus
 }
 
-func (a *Account) Ref() Ref {
-	return Ref{ID: a.ID}
+func (a *Account) Ref() AccountRef {
+	return AccountRef{ID: a.ID}
 }
 
-type Ref struct {
+type AccountRef struct {
 	ID string
 }
 
