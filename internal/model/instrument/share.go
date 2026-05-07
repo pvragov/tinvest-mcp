@@ -64,16 +64,14 @@ func (r *ShareRegistry) GetShare(ctx context.Context, ref ShareRef) (*Share, err
 	return share, nil
 }
 
-func (r *ShareRegistry) GetShareDividends(ctx context.Context, share ShareRef, params GetShareDividendsParams) ([]Dividend, error) {
+func (r *ShareRegistry) GetShareDividends(
+	ctx context.Context, share ShareRef, params GetShareDividendsParams,
+) ([]Dividend, error) {
 	if err := params.Validate(); err != nil {
 		return nil, err
 	}
 
-	dividends, err := r.shares.FetchShareDividends(ctx, share, FetchShareDividendsParams{
-		From: params.From,
-		To:   params.To,
-	})
-
+	dividends, err := r.shares.FetchShareDividends(ctx, share, FetchShareDividendsParams(params))
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch share dividends: %w", err)
 	}
