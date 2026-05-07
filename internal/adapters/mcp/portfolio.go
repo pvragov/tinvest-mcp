@@ -11,7 +11,7 @@ import (
 )
 
 type PortfolioService interface {
-	GetPortfolio(ctx context.Context, ref invest.Ref) (*invest.Portfolio, error)
+	GetPortfolio(ctx context.Context, ref invest.AccountRef) (*invest.Portfolio, error)
 }
 
 func NewGetPortfolio(service PortfolioService) server.ServerTool {
@@ -25,7 +25,7 @@ func NewGetPortfolio(service PortfolioService) server.ServerTool {
 			mcp.WithOutputSchema[getUserPortfolioReply](),
 		),
 		Handler: func(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-			p, err := service.GetPortfolio(ctx, invest.Ref{ID: req.GetString(accountIDArgName, "")})
+			p, err := service.GetPortfolio(ctx, invest.AccountRef{ID: req.GetString(accountIDArgName, "")})
 			if err != nil {
 				return nil, fmt.Errorf("failed to get portfolio: %w", err)
 			}

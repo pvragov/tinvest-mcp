@@ -12,7 +12,7 @@ type PortfolioFetcher interface {
 }
 
 type Portfolio struct {
-	Account   Ref
+	Account   AccountRef
 	Positions []PortfolioPosition
 }
 
@@ -39,7 +39,7 @@ func NewPortfolioRegistry(portfolios PortfolioRepository) *PortfolioRegistry {
 	}
 }
 
-func (r *PortfolioRegistry) GetPortfolio(ctx context.Context, ref Ref) (*Portfolio, error) {
+func (r *PortfolioRegistry) GetPortfolio(ctx context.Context, ref AccountRef) (*Portfolio, error) {
 	p := &Portfolio{Account: ref}
 	if err := r.portfolios.FetchPortfolio(ctx, p); err != nil {
 		return nil, err
