@@ -86,3 +86,38 @@ func (a *InstrumentAdapter) FetchShare(_ context.Context, share *instrument.Shar
 
 	return nil
 }
+
+func (a *InstrumentAdapter) FetchShareDividends(
+	_ context.Context,
+	ref instrument.ShareRef,
+	params instrument.FetchShareDividendsParams,
+) ([]instrument.Dividend, error) {
+	resp, err := a.client.GetDividents(ref.ID, params.From, params.To)
+	if err != nil {
+		return nil, fmt.Errorf("failed to exec get dividends rpc: %w", err)
+	}
+
+	ret := make([]instrument.Dividend, len(resp.Dividends))
+	for i := range resp.Dividends {
+		ret[i] = mapProtoDividend(resp.Dividends[i])
+	}
+
+	return ret, nil
+}
+
+func mapProtoDividend(c *proto.Dividend) instrument.Dividend {
+	divNet := c.GetDividendNet()
+	yield := c.GetYieldValue()
+
+	return instrument.Dividend{
+		Value: instrument.Money{
+			Units:      divNet.GetUnits(),
+			MinorUnits: divNet.GetNano() / 1_000_0000,
+			Currency:   divNet.GetCurrency(),
+		},
+		PaymentDate:  c.GetPaymentDate().AsTime(),
+		DeclaredDate: c.GetDeclaredDate().AsTime(),
+		LastBuyDate:  c.GetLastBuyDate().AsTime(),
+		YieldValue:   float64(yield.GetUnits()) + float64(yield.GetNano())/1_000_000_000,
+	}
+}
