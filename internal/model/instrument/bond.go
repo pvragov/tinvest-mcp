@@ -51,6 +51,7 @@ func (m *Money) String() string {
 	if m.MinorUnits < 0 {
 		return fmt.Sprintf("%d.%d", m.Units, m.MinorUnits*-1)
 	}
+
 	return fmt.Sprintf("%d.%d", m.Units, m.MinorUnits)
 }
 
@@ -69,15 +70,14 @@ func NewBondRegistry(bonds Repository) *BondRegistry {
 	}
 }
 
-func (r *BondRegistry) GetBondCoupons(ctx context.Context, bond BondRef, params GetBondCouponsParams) ([]BondCoupon, error) {
+func (r *BondRegistry) GetBondCoupons(
+	ctx context.Context, bond BondRef, params GetBondCouponsParams,
+) ([]BondCoupon, error) {
 	if err := params.Validate(); err != nil {
 		return nil, err
 	}
 
-	return r.bonds.FetchBondCoupons(ctx, bond, FetchBondCouponParams{
-		From: params.From,
-		To:   params.To,
-	})
+	return r.bonds.FetchBondCoupons(ctx, bond, FetchBondCouponParams(params))
 }
 
 type GetBondCouponsParams struct {

@@ -22,7 +22,6 @@ func NewAccountAdapter(client *investgo.UsersServiceClient) *AccountAdapter {
 
 func (a *AccountAdapter) FilterAccounts(_ context.Context, params invest.FilterParams) ([]invest.Account, error) {
 	resp, err := a.client.GetAccounts(new(mapAccountStatus[params.AccountStatus]))
-
 	if err != nil {
 		return nil, fmt.Errorf("failed to exec get accounts rpc: %w", err)
 	}

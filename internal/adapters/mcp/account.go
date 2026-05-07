@@ -28,8 +28,10 @@ func NewGetUserAccountsTool(service UserAccountService) server.ServerTool {
 			statusArg := req.GetString(accountStatusArgName, "")
 
 			var status invest.AccountStatus
+
 			if statusArg != "" {
 				var err error
+
 				status, err = invest.AccountStatusString(statusArg)
 				if err != nil {
 					return nil, fmt.Errorf("invalid account status: %w", err)
