@@ -1,0 +1,37 @@
+
+version: '3'
+
+vars:
+  APP_NAME: Tinvest-mcp
+  version: 1.0
+
+tasks:
+  default:
+    desc: Full CI pipeline
+    cmds:
+      - task: tidy
+      - task: lint
+      - task: test
+      - task: run
+    silent: false
+
+  tidy:
+  desc: Check go.mod and go.sum are clean
+  cmds:
+    - go mod tidy
+    - git diff --exit-code go.mod go.sum
+
+  lint:
+    desc: Linter launch
+    cmds:
+      - golangci-lint run --timeout=2m
+  
+  test:
+    desc: Tests launch
+    cmds:
+      - go test -v -timeout=1m ./internal/adapters/mcp/
+
+  run:
+    desc: Run without building
+    cmds:
+      - go run ./cmd/tinvest-mcp/
