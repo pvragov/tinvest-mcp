@@ -13,7 +13,9 @@ import (
 
 type ShareService interface {
 	GetShare(ctx context.Context, ref instrument.ShareRef) (*instrument.Share, error)
-	GetShareDividends(ctx context.Context, share instrument.ShareRef, params instrument.GetShareDividendsParams) ([]instrument.Dividend, error)
+	GetShareDividends(
+		ctx context.Context, share instrument.ShareRef, params instrument.GetShareDividendsParams,
+	) ([]instrument.Dividend, error)
 }
 
 func NewGetShareTool(service ShareService) server.ServerTool {
@@ -28,6 +30,7 @@ func NewGetShareTool(service ShareService) server.ServerTool {
 		),
 		Handler: func(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 			ref := instrument.ShareRef{ID: req.GetString(instrumentArgName, "")}
+
 			share, err := service.GetShare(ctx, ref)
 			if err != nil {
 				return nil, fmt.Errorf("failed to get share: %w", err)
@@ -50,6 +53,7 @@ type getShareReply struct {
 	Currency string `json:"currency"`
 }
 
+//nolint:dupl
 func NewGetShareDividendsTool(service ShareService) server.ServerTool {
 	const (
 		instrumentArgName = "instrument-id"
@@ -67,21 +71,14 @@ func NewGetShareDividendsTool(service ShareService) server.ServerTool {
 			mcp.WithOutputSchema[getShareDividendsReply](),
 		),
 		Handler: func(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-			fromTime, err := time.Parse(time.RFC3339, req.GetString(fromArgName, ""))
+			tr, err := parseTimeRangeArgs(req.GetString(fromArgName, ""), req.GetString(toArgName, ""))
 			if err != nil {
-				return nil, fmt.Errorf("invalid 'from' arg: %w", err)
-			}
-
-			toTime, err := time.Parse(time.RFC3339, req.GetString(toArgName, ""))
-			if err != nil {
-				return nil, fmt.Errorf("invalid 'to' arg: %w", err)
+				return nil, err
 			}
 
 			ref := instrument.ShareRef{ID: req.GetString(instrumentArgName, "")}
-			dividends, err := service.GetShareDividends(ctx, ref, instrument.GetShareDividendsParams{
-				From: fromTime,
-				To:   toTime,
-			})
+
+			dividends, err := service.GetShareDividends(ctx, ref, instrument.GetShareDividendsParams(tr))
 			if err != nil {
 				return nil, fmt.Errorf("failed to get share dividends: %w", err)
 			}
