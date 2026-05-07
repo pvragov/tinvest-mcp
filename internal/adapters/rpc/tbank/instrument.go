@@ -45,7 +45,7 @@ func mapProtoCoupon(c *proto.Coupon) instrument.BondCoupon {
 		CouponPeriodDays: c.CouponPeriod,
 		OneBondPay: instrument.Money{
 			Units:      c.PayOneBond.Units,
-			MinorUnits: c.PayOneBond.Nano / 1_000_0000,
+			MinorUnits: c.PayOneBond.Nano / 10_000_000,
 			Currency:   c.PayOneBond.Currency,
 		},
 	}
@@ -112,7 +112,7 @@ func mapProtoDividend(c *proto.Dividend) instrument.Dividend {
 	return instrument.Dividend{
 		Value: instrument.Money{
 			Units:      divNet.GetUnits(),
-			MinorUnits: divNet.GetNano() / 1_000_0000,
+			MinorUnits: divNet.GetNano() / 10_000_000,
 			Currency:   divNet.GetCurrency(),
 		},
 		PaymentDate:  c.GetPaymentDate().AsTime(),

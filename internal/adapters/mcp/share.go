@@ -30,7 +30,7 @@ func NewGetShareTool(service ShareService) server.ServerTool {
 			ref := instrument.ShareRef{ID: req.GetString(instrumentArgName, "")}
 			share, err := service.GetShare(ctx, ref)
 			if err != nil {
-				return nil, fmt.Errorf("failed to get bond: %w", err)
+				return nil, fmt.Errorf("failed to get share: %w", err)
 			}
 
 			return mcp.NewToolResultJSON(getShareReply{
@@ -83,7 +83,7 @@ func NewGetShareDividendsTool(service ShareService) server.ServerTool {
 				To:   toTime,
 			})
 			if err != nil {
-				return nil, fmt.Errorf("failed to get bond coupons: %w", err)
+				return nil, fmt.Errorf("failed to get share dividends: %w", err)
 			}
 
 			reply := getShareDividendsReply{
