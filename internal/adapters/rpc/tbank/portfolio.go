@@ -21,7 +21,7 @@ func NewPortfolioAdapter(client *investgo.OperationsServiceClient) *PortfolioAda
 	}
 }
 
-func (a *PortfolioAdapter) FetchPortfolio(ctx context.Context, p *invest.Portfolio) error {
+func (a *PortfolioAdapter) FetchPortfolio(_ context.Context, p *invest.Portfolio) error {
 	resp, err := a.client.GetPortfolio(p.Account.ID, proto.PortfolioRequest_RUB)
 	if err != nil {
 		return fmt.Errorf("failed to exec get portfolio rpc: %w", err)

@@ -12,10 +12,13 @@ import (
 )
 
 type BondService interface {
-	GetBondCoupons(ctx context.Context, bond instrument.BondRef, params instrument.GetBondCouponsParams) ([]instrument.BondCoupon, error)
+	GetBondCoupons(
+		ctx context.Context, bond instrument.BondRef, params instrument.GetBondCouponsParams,
+	) ([]instrument.BondCoupon, error)
 	GetBond(ctx context.Context, ref instrument.BondRef) (*instrument.Bond, error)
 }
 
+//nolint:dupl
 func NewGetBondCouponsTool(service BondService) server.ServerTool {
 	const (
 		instrumentArgName = "instrument-id"
@@ -33,21 +36,14 @@ func NewGetBondCouponsTool(service BondService) server.ServerTool {
 			mcp.WithOutputSchema[getBondCouponsReply](),
 		),
 		Handler: func(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-			fromTime, err := time.Parse(time.RFC3339, req.GetString(fromArgName, ""))
+			tr, err := parseTimeRangeArgs(req.GetString(fromArgName, ""), req.GetString(toArgName, ""))
 			if err != nil {
-				return nil, fmt.Errorf("invalid 'from' arg: %w", err)
-			}
-
-			toTime, err := time.Parse(time.RFC3339, req.GetString(toArgName, ""))
-			if err != nil {
-				return nil, fmt.Errorf("invalid 'to' arg: %w", err)
+				return nil, err
 			}
 
 			ref := instrument.BondRef{ID: req.GetString(instrumentArgName, "")}
-			coupons, err := service.GetBondCoupons(ctx, ref, instrument.GetBondCouponsParams{
-				From: fromTime,
-				To:   toTime,
-			})
+
+			coupons, err := service.GetBondCoupons(ctx, ref, instrument.GetBondCouponsParams(tr))
 			if err != nil {
 				return nil, fmt.Errorf("failed to get bond coupons: %w", err)
 			}
@@ -62,6 +58,25 @@ func NewGetBondCouponsTool(service BondService) server.ServerTool {
 			return mcp.NewToolResultJSON(reply)
 		},
 	}
+}
+
+type timeRange struct {
+	From time.Time
+	To   time.Time
+}
+
+func parseTimeRangeArgs(from, to string) (timeRange, error) {
+	fromTime, err := time.Parse(time.RFC3339, from)
+	if err != nil {
+		return timeRange{}, fmt.Errorf("invalid 'from' arg: %w", err)
+	}
+
+	toTime, err := time.Parse(time.RFC3339, to)
+	if err != nil {
+		return timeRange{}, fmt.Errorf("invalid 'to' arg: %w", err)
+	}
+
+	return timeRange{From: fromTime, To: toTime}, nil
 }
 
 type getBondCouponsReply struct {
@@ -107,6 +122,7 @@ func NewGetBondTool(service BondService) server.ServerTool {
 		),
 		Handler: func(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 			ref := instrument.BondRef{ID: req.GetString(instrumentArgName, "")}
+
 			bond, err := service.GetBond(ctx, ref)
 			if err != nil {
 				return nil, fmt.Errorf("failed to get bond: %w", err)
