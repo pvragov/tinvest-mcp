@@ -1,0 +1,28 @@
+version: '3'
+
+dotenv: ['.env']
+
+vars:
+  APP_NAME: tinvest-mcp
+  version: 0.0.6
+
+tasks:
+  default:
+    desc: Список задач
+    cmds:
+      - task --list
+
+  lint:
+    desc: Запуск линтера
+    cmds:
+      - golangci-lint run --timeout=2m
+  
+  test:
+    desc: Запуск тестов
+    cmds:
+      - go test -v -timeout=1m ./...
+
+  run:
+    desc: Запуск без сборки
+    cmds:
+      - go run ./cmd/tinvest-mcp/
