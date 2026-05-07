@@ -43,9 +43,8 @@ func NewGetBondCouponsTool(service BondService) server.ServerTool {
 				return nil, fmt.Errorf("invalid 'to' arg: %w", err)
 			}
 
-			coupons, err := service.GetBondCoupons(ctx, instrument.BondRef{
-				ID: req.GetString(instrumentArgName, ""),
-			}, instrument.GetBondCouponsParams{
+			ref := instrument.BondRef{ID: req.GetString(instrumentArgName, "")}
+			coupons, err := service.GetBondCoupons(ctx, ref, instrument.GetBondCouponsParams{
 				From: fromTime,
 				To:   toTime,
 			})
@@ -53,7 +52,9 @@ func NewGetBondCouponsTool(service BondService) server.ServerTool {
 				return nil, fmt.Errorf("failed to get bond coupons: %w", err)
 			}
 
-			reply := getBondCouponsReply{Coupons: make([]bondCouponView, len(coupons))}
+			reply := getBondCouponsReply{
+				ID:      ref.ID,
+				Coupons: make([]bondCouponView, len(coupons))}
 			for i, coupon := range coupons {
 				reply.Coupons[i] = mapCoupon(&coupon)
 			}
@@ -64,6 +65,7 @@ func NewGetBondCouponsTool(service BondService) server.ServerTool {
 }
 
 type getBondCouponsReply struct {
+	ID      string           `json:"instrumentID"`
 	Coupons []bondCouponView `json:"coupons"`
 }
 
@@ -110,11 +112,13 @@ func NewGetBondTool(service BondService) server.ServerTool {
 				return nil, fmt.Errorf("failed to get bond: %w", err)
 			}
 
-			return mcp.NewToolResultJSON(getShareReply{
-				ID:       bond.ID,
-				Name:     bond.Name,
-				ISIN:     bond.ISIN,
-				Currency: bond.Currency,
+			return mcp.NewToolResultJSON(getBondReply{
+				ID:                bond.ID,
+				Name:              bond.Name,
+				ISIN:              bond.ISIN,
+				Currency:          bond.Currency,
+				HasAmortization:   bond.HasAmortization,
+				HasFloatingCoupon: bond.HasFloatingCoupon,
 			})
 		},
 	}

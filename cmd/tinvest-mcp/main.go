@@ -68,6 +68,7 @@ func run() error {
 		mcp.NewGetBondCouponsTool(bondRegistry),
 		// Share tools:
 		mcp.NewGetShareTool(shareRegistry),
+		mcp.NewGetShareDividendsTool(shareRegistry),
 	)
 
 	var httpDebugServerEnable bool // use http only for debug
