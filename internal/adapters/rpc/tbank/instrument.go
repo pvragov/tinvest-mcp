@@ -43,11 +43,7 @@ func mapProtoCoupon(c *proto.Coupon) instrument.BondCoupon {
 		CouponDate:       c.CouponDate.AsTime(),
 		CouponNumber:     int(c.CouponNumber),
 		CouponPeriodDays: c.CouponPeriod,
-		OneBondPay: instrument.Money{
-			Units:      c.PayOneBond.Units,
-			MinorUnits: c.PayOneBond.Nano / 10_000_000,
-			Currency:   c.PayOneBond.Currency,
-		},
+		OneBondPay:       mapProtoMoney(c.GetPayOneBond()),
 	}
 }
 
@@ -63,8 +59,11 @@ func (a *InstrumentAdapter) FetchBond(_ context.Context, bond *instrument.Bond) 
 		Name:              in.GetName(),
 		ISIN:              in.GetIsin(),
 		Currency:          in.GetCurrency(),
+		Nominal:           mapProtoMoney(in.GetNominal()),
+		InitialNominal:    mapProtoMoney(in.GetInitialNominal()),
 		HasAmortization:   in.GetAmortizationFlag(),
 		HasFloatingCoupon: in.GetFloatingCouponFlag(),
+		LotSize:           int(in.GetLot()),
 	}
 
 	return nil
@@ -82,6 +81,7 @@ func (a *InstrumentAdapter) FetchShare(_ context.Context, share *instrument.Shar
 		Name:     in.GetName(),
 		ISIN:     in.GetIsin(),
 		Currency: in.GetCurrency(),
+		LotSize:  int(in.GetLot()),
 	}
 
 	return nil
@@ -110,14 +110,18 @@ func mapProtoDividend(c *proto.Dividend) instrument.Dividend {
 	yield := c.GetYieldValue()
 
 	return instrument.Dividend{
-		Value: instrument.Money{
-			Units:      divNet.GetUnits(),
-			MinorUnits: divNet.GetNano() / 10_000_000,
-			Currency:   divNet.GetCurrency(),
-		},
+		Value:        mapProtoMoney(divNet),
 		PaymentDate:  c.GetPaymentDate().AsTime(),
 		DeclaredDate: c.GetDeclaredDate().AsTime(),
 		LastBuyDate:  c.GetLastBuyDate().AsTime(),
 		YieldValue:   float64(yield.GetUnits()) + float64(yield.GetNano())/1_000_000_000,
+	}
+}
+
+func mapProtoMoney(v *proto.MoneyValue) instrument.Money {
+	return instrument.Money{
+		Units:      v.GetUnits(),
+		MinorUnits: v.GetNano() / 10_000_000,
+		Currency:   v.GetCurrency(),
 	}
 }

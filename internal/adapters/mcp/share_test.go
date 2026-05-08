@@ -20,6 +20,7 @@ func TestNewGetShareTool(t *testing.T) {
 			Name:     "Test Share",
 			ISIN:     "US0378331005",
 			Currency: "usd",
+			LotSize:  10,
 		}
 
 		service := &MockShareService{}
@@ -43,6 +44,7 @@ func TestNewGetShareTool(t *testing.T) {
 			Name:     "Test Share",
 			ISIN:     "US0378331005",
 			Currency: "usd",
+			LotSize:  10,
 		}, res.StructuredContent)
 	})
 }
@@ -86,7 +88,7 @@ func TestNewGetShareDividendsTool(t *testing.T) {
 		require.Equal(t, getShareDividendsReply{
 			ID: "share-1",
 			Dividends: []shareDividendsView{{
-				Value:        moneyView{Unit: 1, MinorUnit: 50, Currency: "usd"},
+				Value:        moneyView{Units: 1, MinorUnits: 50, Currency: "usd"},
 				PaymentDate:  time.Date(2024, 6, 15, 0, 0, 0, 0, time.UTC),
 				DeclaredDate: time.Date(2024, 5, 1, 0, 0, 0, 0, time.UTC),
 				LastBuyDate:  time.Date(2024, 6, 10, 0, 0, 0, 0, time.UTC),

@@ -15,18 +15,23 @@ import (
 func TestNewGetPortfolio(t *testing.T) {
 
 	t.Run("success", func(t *testing.T) {
+		var (
+			avgPrice        = newMoneyValue()
+			instrumentPrice = newMoneyValue()
+		)
+
 		portfolio := &invest.Portfolio{
 			Account: invest.AccountRef{ID: "acc-1"},
-			Positions: []invest.PortfolioPosition{
-				{
-					ID:         "instr-1",
-					FIGI:       "BBG000B9XRY4",
-					Quantity:   10,
-					Instrument: instrument.TypeShare,
-					Ticker:     "AAPL",
-					ClassCode:  "SPBXM",
-				},
-			},
+			Positions: []invest.PortfolioPosition{{
+				ID:              "instr-1",
+				FIGI:            "BBG000B9XRY4",
+				Quantity:        10,
+				Instrument:      instrument.TypeShare,
+				Ticker:          "AAPL",
+				ClassCode:       "SPBXM",
+				AveragePrice:    avgPrice,
+				InstrumentPrice: instrumentPrice,
+			}},
 		}
 
 		service := &MockPortfolioService{}
@@ -49,12 +54,14 @@ func TestNewGetPortfolio(t *testing.T) {
 			Portfolio: portfolioView{
 				AccountID: "acc-1",
 				Positions: []positionView{{
-					InstrumentID: "instr-1",
-					FIGI:         "BBG000B9XRY4",
-					Quantity:     10,
-					Instrument:   instrument.TypeShare.String(),
-					Ticker:       "AAPL",
-					ClassCode:    "SPBXM",
+					InstrumentID:    "instr-1",
+					FIGI:            "BBG000B9XRY4",
+					Quantity:        10,
+					Instrument:      instrument.TypeShare.String(),
+					Ticker:          "AAPL",
+					ClassCode:       "SPBXM",
+					AveragePrice:    moneyView(avgPrice),
+					InstrumentPrice: moneyView(instrumentPrice),
 				}},
 			},
 		}

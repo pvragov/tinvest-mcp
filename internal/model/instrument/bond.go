@@ -26,6 +26,9 @@ type Bond struct {
 	Name              string
 	ISIN              string
 	Currency          string
+	LotSize           int
+	Nominal           Money
+	InitialNominal    Money
 	HasAmortization   bool
 	HasFloatingCoupon bool
 }

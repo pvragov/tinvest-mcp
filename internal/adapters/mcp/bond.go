@@ -91,22 +91,12 @@ type bondCouponView struct {
 	OneBondPay       moneyView `json:"oneBondPay"`
 }
 
-type moneyView struct {
-	Unit      int64  `json:"unit"`
-	MinorUnit int32  `json:"minorUnit"`
-	Currency  string `json:"currency"`
-}
-
 func mapCoupon(c *instrument.BondCoupon) bondCouponView {
 	return bondCouponView{
 		CouponDate:       c.CouponDate,
 		CouponNumber:     c.CouponNumber,
 		CouponPeriodDays: c.CouponPeriodDays,
-		OneBondPay: moneyView{
-			Unit:      c.OneBondPay.Units,
-			MinorUnit: c.OneBondPay.MinorUnits,
-			Currency:  c.OneBondPay.Currency,
-		},
+		OneBondPay:       moneyView(c.OneBondPay),
 	}
 }
 
@@ -135,16 +125,22 @@ func NewGetBondTool(service BondService) server.ServerTool {
 				Currency:          bond.Currency,
 				HasAmortization:   bond.HasAmortization,
 				HasFloatingCoupon: bond.HasFloatingCoupon,
+				LotSize:           bond.LotSize,
+				Nominal:           moneyView(bond.Nominal),
+				InitialNominal:    moneyView(bond.InitialNominal),
 			})
 		},
 	}
 }
 
 type getBondReply struct {
-	ID                string `json:"instrumentID"`
-	Name              string `json:"name"`
-	ISIN              string `json:"isin"`
-	Currency          string `json:"currency"`
-	HasAmortization   bool   `json:"hasAmortization"`
-	HasFloatingCoupon bool   `json:"hasFloatingCoupon"`
+	ID                string    `json:"instrumentID"`
+	Name              string    `json:"name"`
+	ISIN              string    `json:"isin"`
+	Currency          string    `json:"currency"`
+	LotSize           int       `json:"lotSize"`
+	Nominal           moneyView `json:"nominalPrice"`
+	InitialNominal    moneyView `json:"initialNominalPrice"`
+	HasAmortization   bool      `json:"hasAmortization"`
+	HasFloatingCoupon bool      `json:"hasFloatingCoupon"`
 }
