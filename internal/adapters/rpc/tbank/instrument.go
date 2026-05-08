@@ -25,13 +25,13 @@ func (a *InstrumentAdapter) FetchBondCoupons(
 	_ context.Context,
 	bond instrument.BondRef,
 	params instrument.FetchBondCouponParams,
-) ([]instrument.Coupon, error) {
+) ([]instrument.BondCoupon, error) {
 	resp, err := a.client.GetBondCoupons(bond.ID, params.From, params.To)
 	if err != nil {
 		return nil, fmt.Errorf("failed to exec get bond coupons rpc: %w", err)
 	}
 
-	ret := make([]instrument.Coupon, len(resp.Events))
+	ret := make([]instrument.BondCoupon, len(resp.Events))
 	for i := range resp.Events {
 		ret[i] = mapProtoCoupon(resp.Events[i])
 	}
@@ -39,8 +39,8 @@ func (a *InstrumentAdapter) FetchBondCoupons(
 	return ret, nil
 }
 
-func mapProtoCoupon(c *proto.Coupon) instrument.Coupon {
-	ret := instrument.Coupon{
+func mapProtoCoupon(c *proto.Coupon) instrument.BondCoupon {
+	ret := instrument.BondCoupon{
 		No:         int(c.CouponNumber),
 		PeriodDays: c.CouponPeriod,
 		OneBondPay: mapProtoMoney(c.GetPayOneBond()),
@@ -60,6 +60,31 @@ func mapProtoCoupon(c *proto.Coupon) instrument.Coupon {
 	return ret
 }
 
+func (a *InstrumentAdapter) FetchBondRedemptions(
+	_ context.Context,
+	bond instrument.BondRef,
+	params instrument.FetchBondRedemptionParams,
+) ([]instrument.BondRedemption, error) {
+	resp, err := a.client.GetBondEvents(bond.ID, proto.GetBondEventsRequest_EVENT_TYPE_MTY, params.From, params.To)
+	if err != nil {
+		return nil, fmt.Errorf("failed to exec get bond events rpc: %w", err)
+	}
+
+	ret := make([]instrument.BondRedemption, len(resp.Events))
+	for i := range ret {
+		ret[i] = mapProtoBondRedemptionEvent(resp.Events[i])
+	}
+
+	return ret, nil
+}
+
+func mapProtoBondRedemptionEvent(e *proto.GetBondEventsResponse_BondEvent) instrument.BondRedemption {
+	return instrument.BondRedemption{
+		PayDate:    e.GetPayDate().AsTime(),
+		OneBondPay: mapProtoMoney(e.GetPayOneBond()),
+	}
+}
+
 func (a *InstrumentAdapter) FetchBond(_ context.Context, bond *instrument.Bond) error {
 	resp, err := a.client.BondByUid(bond.ID)
 	if err != nil {
@@ -77,6 +102,15 @@ func (a *InstrumentAdapter) FetchBond(_ context.Context, bond *instrument.Bond) 
 		HasAmortization:   in.GetAmortizationFlag(),
 		HasFloatingCoupon: in.GetFloatingCouponFlag(),
 		LotSize:           int(in.GetLot()),
+	}
+
+	// TODO: add optional type mapping helper
+	if in.MaturityDate != nil {
+		bond.MaturityDate = box.Some(in.MaturityDate.AsTime())
+	}
+
+	if in.AciValue != nil {
+		bond.ACI = box.Some(mapProtoMoney(in.GetAciValue()))
 	}
 
 	return nil

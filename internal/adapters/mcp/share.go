@@ -86,7 +86,9 @@ func NewGetShareDividendsTool(service ShareService) server.ServerTool {
 
 			reply := getShareDividendsReply{
 				ID:        ref.ID,
-				Dividends: make([]shareDividendsView, len(dividends))}
+				Dividends: make([]shareDividendsView, len(dividends)),
+			}
+
 			for i, d := range dividends {
 				reply.Dividends[i] = mapShareDividend(&d)
 			}

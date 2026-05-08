@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/pvragov/tinvest-mcp/internal/model/instrument"
+	"github.com/sevlyar/box"
 
 	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/mark3labs/mcp-go/server"
@@ -14,7 +15,10 @@ import (
 type BondService interface {
 	GetBondCoupons(
 		ctx context.Context, bond instrument.BondRef, params instrument.GetBondCouponsParams,
-	) ([]instrument.Coupon, error)
+	) ([]instrument.BondCoupon, error)
+	GetBondRedemptions(
+		ctx context.Context, bond instrument.BondRef, params instrument.GetBondRedemptionParams,
+	) ([]instrument.BondRedemption, error)
 	GetBond(ctx context.Context, ref instrument.BondRef) (*instrument.Bond, error)
 }
 
@@ -49,7 +53,9 @@ func NewGetBondCouponsTool(service BondService) server.ServerTool {
 
 			reply := getBondCouponsReply{
 				ID:      ref.ID,
-				Coupons: make([]bondCouponView, len(coupons))}
+				Coupons: make([]bondCouponView, len(coupons)),
+			}
+
 			for i := range coupons {
 				reply.Coupons[i] = mapCoupon(&coupons[i])
 			}
@@ -86,12 +92,12 @@ type getBondCouponsReply struct {
 type bondCouponView struct {
 	PayDate        *time.Time        `json:"payDate"`
 	Period         *couponPeriodView `json:"period"`
-	PeriodDayCount int               `json:"periodDaysCount"`
+	PeriodDayCount int               `json:"periodDayCount"`
 	No             int               `json:"no"`
 	OneBondPay     moneyView         `json:"oneBondPay"`
 }
 
-func mapCoupon(c *instrument.Coupon) bondCouponView {
+func mapCoupon(c *instrument.BondCoupon) bondCouponView {
 	ret := bondCouponView{
 		No:             c.No,
 		PeriodDayCount: int(c.PeriodDays),
@@ -112,6 +118,66 @@ func mapCoupon(c *instrument.Coupon) bondCouponView {
 type couponPeriodView struct {
 	Start time.Time `json:"startDate"`
 	End   time.Time `json:"endDate"`
+}
+
+func NewGetBondRedemptionsTool(service BondService) server.ServerTool {
+	const (
+		instrumentArgName = "instrument-id"
+		fromArgName       = "from"
+		toArgName         = "to"
+	)
+
+	return server.ServerTool{
+		Tool: mcp.NewTool(
+			"tbank-get-bond-redemptions",
+			mcp.WithDescription("Позволяет получить список погашений для облигации за указанный период"),
+			mcp.WithString(instrumentArgName, mcp.Description("Идентификатор инструмента (облигации)"), mcp.Required()),
+			mcp.WithString(fromArgName, mcp.Description("Начало периода в формате YYYY-MM-DDTHH:MM:SSZ"), mcp.Required()),
+			mcp.WithString(toArgName, mcp.Description("Конец периода в формате YYYY-MM-DDTHH:MM:SSZ"), mcp.Required()),
+			mcp.WithOutputSchema[getBondRedemptionsReply](),
+		),
+		Handler: func(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+			tr, err := parseTimeRangeArgs(req.GetString(fromArgName, ""), req.GetString(toArgName, ""))
+			if err != nil {
+				return nil, err
+			}
+
+			ref := instrument.BondRef{ID: req.GetString(instrumentArgName, "")}
+
+			reds, err := service.GetBondRedemptions(ctx, ref, instrument.GetBondRedemptionParams(tr))
+			if err != nil {
+				return nil, fmt.Errorf("failed to get bond redemptions: %w", err)
+			}
+
+			reply := getBondRedemptionsReply{
+				ID:          ref.ID,
+				Redemptions: make([]bondRedemptionView, len(reds)),
+			}
+
+			for i := range reds {
+				reply.Redemptions[i] = mapBondRedemption(reds[i])
+			}
+
+			return mcp.NewToolResultJSON(reply)
+		},
+	}
+}
+
+type getBondRedemptionsReply struct {
+	ID          string               `json:"instrumentID"`
+	Redemptions []bondRedemptionView `json:"redemptions"`
+}
+
+type bondRedemptionView struct {
+	PayDate    time.Time `json:"payDate"`
+	OneBondPay moneyView `json:"oneBondPay"`
+}
+
+func mapBondRedemption(r instrument.BondRedemption) bondRedemptionView {
+	return bondRedemptionView{
+		PayDate:    r.PayDate,
+		OneBondPay: moneyView(r.OneBondPay),
+	}
 }
 
 func NewGetBondTool(service BondService) server.ServerTool {
@@ -137,24 +203,36 @@ func NewGetBondTool(service BondService) server.ServerTool {
 				Name:              bond.Name,
 				ISIN:              bond.ISIN,
 				Currency:          bond.Currency,
-				HasAmortization:   bond.HasAmortization,
-				HasFloatingCoupon: bond.HasFloatingCoupon,
+				MaturityDate:      getOptionalValue(bond.MaturityDate),
 				LotSize:           bond.LotSize,
 				Nominal:           moneyView(bond.Nominal),
 				InitialNominal:    moneyView(bond.InitialNominal),
+				ACI:               (*moneyView)(getOptionalValue(bond.ACI)),
+				HasAmortization:   bond.HasAmortization,
+				HasFloatingCoupon: bond.HasFloatingCoupon,
 			})
 		},
 	}
 }
 
 type getBondReply struct {
-	ID                string    `json:"instrumentID"`
-	Name              string    `json:"name"`
-	ISIN              string    `json:"isin"`
-	Currency          string    `json:"currency"`
-	LotSize           int       `json:"lotSize"`
-	Nominal           moneyView `json:"nominalPrice"`
-	InitialNominal    moneyView `json:"initialNominalPrice"`
-	HasAmortization   bool      `json:"hasAmortization"`
-	HasFloatingCoupon bool      `json:"hasFloatingCoupon"`
+	ID                string     `json:"instrumentID"`
+	Name              string     `json:"name"`
+	ISIN              string     `json:"isin"`
+	Currency          string     `json:"currency"`
+	LotSize           int        `json:"lotSize"`
+	Nominal           moneyView  `json:"currentNominalPrice"`
+	InitialNominal    moneyView  `json:"initialNominalPrice"`
+	ACI               *moneyView `json:"accruedCouponInterest"`
+	MaturityDate      *time.Time `json:"maturityDate"`
+	HasAmortization   bool       `json:"hasAmortization"`
+	HasFloatingCoupon bool       `json:"hasFloatingCoupon"`
+}
+
+func getOptionalValue[T any](v box.Optional[T]) *T {
+	if v.IsSome() {
+		return new(v.Get())
+	}
+
+	return nil
 }

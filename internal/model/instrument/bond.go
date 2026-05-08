@@ -8,9 +8,14 @@ import (
 	"github.com/sevlyar/box"
 )
 
+type BondFetcher interface {
+	// FetchBond fetches bond by id.
+	FetchBond(ctx context.Context, bond *Bond) error
+}
+
 type BondCouponsFetcher interface {
 	// FetchBondCoupons fetches the bound coupons by the specified params.
-	FetchBondCoupons(ctx context.Context, bond BondRef, params FetchBondCouponParams) ([]Coupon, error)
+	FetchBondCoupons(ctx context.Context, bond BondRef, params FetchBondCouponParams) ([]BondCoupon, error)
 }
 
 type FetchBondCouponParams struct {
@@ -18,9 +23,20 @@ type FetchBondCouponParams struct {
 	To   time.Time
 }
 
-type BondFetcher interface {
-	// FetchBond fetches bond by id.
-	FetchBond(ctx context.Context, bond *Bond) error
+type BondRedemptionFetcher interface {
+	// FetchBondRedemptions fetches the bond redemptions by the specified bond.
+	FetchBondRedemptions(ctx context.Context, bond BondRef, params FetchBondRedemptionParams) ([]BondRedemption, error)
+}
+
+type FetchBondRedemptionParams struct {
+	From time.Time
+	To   time.Time
+}
+
+type Repository interface {
+	BondFetcher
+	BondCouponsFetcher
+	BondRedemptionFetcher
 }
 
 type Bond struct {
@@ -31,6 +47,8 @@ type Bond struct {
 	LotSize           int
 	Nominal           Money
 	InitialNominal    Money
+	MaturityDate      box.Optional[time.Time]
+	ACI               box.Optional[Money]
 	HasAmortization   bool
 	HasFloatingCoupon bool
 }
@@ -39,11 +57,16 @@ type BondRef struct {
 	ID string // Instrument ID
 }
 
-type Coupon struct {
+type BondCoupon struct {
 	PayDate    box.Optional[time.Time]
 	Period     box.Optional[CuponPeriod]
 	PeriodDays int32
 	No         int
+	OneBondPay Money
+}
+
+type BondRedemption struct {
+	PayDate    time.Time
 	OneBondPay Money
 }
 
@@ -66,11 +89,6 @@ func (m *Money) String() string {
 	return fmt.Sprintf("%d.%d", m.Units, m.MinorUnits)
 }
 
-type Repository interface {
-	BondFetcher
-	BondCouponsFetcher
-}
-
 type BondRegistry struct {
 	bonds Repository
 }
@@ -83,7 +101,7 @@ func NewBondRegistry(bonds Repository) *BondRegistry {
 
 func (r *BondRegistry) GetBondCoupons(
 	ctx context.Context, bond BondRef, params GetBondCouponsParams,
-) ([]Coupon, error) {
+) ([]BondCoupon, error) {
 	if err := params.Validate(); err != nil {
 		return nil, err
 	}
@@ -97,6 +115,36 @@ type GetBondCouponsParams struct {
 }
 
 func (p *GetBondCouponsParams) Validate() error {
+	if p.From.After(p.To) {
+		return fmt.Errorf("from time must be before to time")
+	}
+
+	return nil
+}
+
+func (r *BondRegistry) GetBondRedemptions(
+	ctx context.Context,
+	bond BondRef,
+	params GetBondRedemptionParams,
+) ([]BondRedemption, error) {
+	if err := params.Validate(); err != nil {
+		return nil, err
+	}
+
+	redemptions, err := r.bonds.FetchBondRedemptions(ctx, bond, FetchBondRedemptionParams(params))
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch bond redemptions: %w", err)
+	}
+
+	return redemptions, nil
+}
+
+type GetBondRedemptionParams struct {
+	From time.Time
+	To   time.Time
+}
+
+func (p *GetBondRedemptionParams) Validate() error {
 	if p.From.After(p.To) {
 		return fmt.Errorf("from time must be before to time")
 	}

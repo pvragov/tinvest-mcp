@@ -66,6 +66,7 @@ func run() error {
 		// Bond tools:
 		mcp.NewGetBondTool(bondRegistry),
 		mcp.NewGetBondCouponsTool(bondRegistry),
+		mcp.NewGetBondRedemptionsTool(bondRegistry),
 		// Share tools:
 		mcp.NewGetShareTool(shareRegistry),
 		mcp.NewGetShareDividendsTool(shareRegistry),
