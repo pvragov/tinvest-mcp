@@ -6,6 +6,7 @@ import (
 
 	"github.com/pvragov/tinvest-mcp/internal/model/instrument"
 	"github.com/pvragov/tinvest-mcp/internal/model/invest"
+	"github.com/sevlyar/box"
 
 	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/stretchr/testify/mock"
@@ -32,7 +33,7 @@ func TestNewGetPortfolio(t *testing.T) {
 				ClassCode:       "SPBXM",
 				AveragePrice:    avgPrice,
 				InstrumentPrice: instrumentPrice,
-				ACI:             &aciPrice,
+				ACI:             box.Some(aciPrice),
 			}},
 		}
 

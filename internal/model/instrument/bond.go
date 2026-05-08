@@ -4,11 +4,13 @@ import (
 	"context"
 	"fmt"
 	"time"
+
+	"github.com/sevlyar/box"
 )
 
 type BondCouponsFetcher interface {
 	// FetchBondCoupons fetches the bound coupons by the specified params.
-	FetchBondCoupons(ctx context.Context, bond BondRef, params FetchBondCouponParams) ([]BondCoupon, error)
+	FetchBondCoupons(ctx context.Context, bond BondRef, params FetchBondCouponParams) ([]Coupon, error)
 }
 
 type FetchBondCouponParams struct {
@@ -37,11 +39,17 @@ type BondRef struct {
 	ID string // Instrument ID
 }
 
-type BondCoupon struct {
-	CouponDate       time.Time
-	CouponNumber     int
-	CouponPeriodDays int32
-	OneBondPay       Money
+type Coupon struct {
+	PayDate    box.Optional[time.Time]
+	Period     box.Optional[CuponPeriod]
+	PeriodDays int32
+	No         int
+	OneBondPay Money
+}
+
+type CuponPeriod struct {
+	Start time.Time
+	End   time.Time
 }
 
 type Money struct {
@@ -75,7 +83,7 @@ func NewBondRegistry(bonds Repository) *BondRegistry {
 
 func (r *BondRegistry) GetBondCoupons(
 	ctx context.Context, bond BondRef, params GetBondCouponsParams,
-) ([]BondCoupon, error) {
+) ([]Coupon, error) {
 	if err := params.Validate(); err != nil {
 		return nil, err
 	}

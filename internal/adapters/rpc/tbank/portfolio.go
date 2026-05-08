@@ -6,6 +6,7 @@ import (
 
 	"github.com/pvragov/tinvest-mcp/internal/model/instrument"
 	"github.com/pvragov/tinvest-mcp/internal/model/invest"
+	"github.com/sevlyar/box"
 
 	"opensource.tbank.ru/invest/invest-go/investgo"
 	proto "opensource.tbank.ru/invest/invest-go/proto"
@@ -47,7 +48,7 @@ func mapProtoPortfolioPosition(p *proto.PortfolioPosition) invest.PortfolioPosit
 		AveragePrice:    mapProtoMoney(p.GetAveragePositionPrice()),
 	}
 	if p.CurrentNkd != nil {
-		ret.ACI = new(mapProtoMoney(p.CurrentNkd))
+		ret.ACI = box.Some(mapProtoMoney(p.CurrentNkd))
 	}
 
 	return ret

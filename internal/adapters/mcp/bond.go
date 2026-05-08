@@ -14,11 +14,10 @@ import (
 type BondService interface {
 	GetBondCoupons(
 		ctx context.Context, bond instrument.BondRef, params instrument.GetBondCouponsParams,
-	) ([]instrument.BondCoupon, error)
+	) ([]instrument.Coupon, error)
 	GetBond(ctx context.Context, ref instrument.BondRef) (*instrument.Bond, error)
 }
 
-//nolint:dupl
 func NewGetBondCouponsTool(service BondService) server.ServerTool {
 	const (
 		instrumentArgName = "instrument-id"
@@ -51,8 +50,8 @@ func NewGetBondCouponsTool(service BondService) server.ServerTool {
 			reply := getBondCouponsReply{
 				ID:      ref.ID,
 				Coupons: make([]bondCouponView, len(coupons))}
-			for i, coupon := range coupons {
-				reply.Coupons[i] = mapCoupon(&coupon)
+			for i := range coupons {
+				reply.Coupons[i] = mapCoupon(&coupons[i])
 			}
 
 			return mcp.NewToolResultJSON(reply)
@@ -85,19 +84,34 @@ type getBondCouponsReply struct {
 }
 
 type bondCouponView struct {
-	CouponDate       time.Time `json:"couponDate"`
-	CouponNumber     int       `json:"couponNumber"`
-	CouponPeriodDays int32     `json:"couponPeriodDays"`
-	OneBondPay       moneyView `json:"oneBondPay"`
+	PayDate        *time.Time        `json:"payDate"`
+	Period         *couponPeriodView `json:"period"`
+	PeriodDayCount int               `json:"periodDaysCount"`
+	No             int               `json:"no"`
+	OneBondPay     moneyView         `json:"oneBondPay"`
 }
 
-func mapCoupon(c *instrument.BondCoupon) bondCouponView {
-	return bondCouponView{
-		CouponDate:       c.CouponDate,
-		CouponNumber:     c.CouponNumber,
-		CouponPeriodDays: c.CouponPeriodDays,
-		OneBondPay:       moneyView(c.OneBondPay),
+func mapCoupon(c *instrument.Coupon) bondCouponView {
+	ret := bondCouponView{
+		No:             c.No,
+		PeriodDayCount: int(c.PeriodDays),
+		OneBondPay:     moneyView(c.OneBondPay),
 	}
+
+	if c.PayDate.IsSome() {
+		ret.PayDate = new(c.PayDate.Get())
+	}
+
+	if c.Period.IsSome() {
+		ret.Period = new(couponPeriodView(c.Period.Get()))
+	}
+
+	return ret
+}
+
+type couponPeriodView struct {
+	Start time.Time `json:"startDate"`
+	End   time.Time `json:"endDate"`
 }
 
 func NewGetBondTool(service BondService) server.ServerTool {

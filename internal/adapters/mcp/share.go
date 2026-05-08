@@ -55,7 +55,6 @@ type getShareReply struct {
 	LotSize  int    `json:"lotSize"`
 }
 
-//nolint:dupl
 func NewGetShareDividendsTool(service ShareService) server.ServerTool {
 	const (
 		instrumentArgName = "instrument-id"

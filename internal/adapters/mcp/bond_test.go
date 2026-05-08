@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/pvragov/tinvest-mcp/internal/model/instrument"
+	"github.com/sevlyar/box"
 
 	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/stretchr/testify/mock"
@@ -62,12 +63,17 @@ func TestNewGetBondCouponsTool(t *testing.T) {
 	from := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)
 	to := time.Date(2024, 12, 31, 0, 0, 0, 0, time.UTC)
 
+	payDate := time.Date(2024, 6, 1, 0, 0, 0, 0, time.UTC)
+	period := instrument.CuponPeriod{Start: from, End: to}
+
 	t.Run("success", func(t *testing.T) {
-		coupons := []instrument.BondCoupon{{
-			CouponDate:       time.Date(2024, 6, 1, 0, 0, 0, 0, time.UTC),
-			CouponNumber:     1,
-			CouponPeriodDays: 182,
-			OneBondPay:       instrument.Money{Units: 50, MinorUnits: 0, Currency: "rub"},
+		bondPay := newMoneyValue()
+		coupons := []instrument.Coupon{{
+			PayDate:    box.Some(payDate),
+			Period:     box.Some(period),
+			No:         1,
+			PeriodDays: 182,
+			OneBondPay: bondPay,
 		}}
 
 		service := &MockBondService{}
@@ -96,10 +102,11 @@ func TestNewGetBondCouponsTool(t *testing.T) {
 		require.Equal(t, getBondCouponsReply{
 			ID: "bond-1",
 			Coupons: []bondCouponView{{
-				CouponDate:       time.Date(2024, 6, 1, 0, 0, 0, 0, time.UTC),
-				CouponNumber:     1,
-				CouponPeriodDays: 182,
-				OneBondPay:       moneyView{Units: 50, MinorUnits: 0, Currency: "rub"},
+				PayDate:        &payDate,
+				Period:         new(couponPeriodView(period)),
+				No:             1,
+				PeriodDayCount: 182,
+				OneBondPay:     moneyView(bondPay),
 			}},
 		}, res.StructuredContent)
 	})
@@ -146,7 +153,7 @@ type MockBondService struct {
 func NewMockBondServiceStub() *MockBondService {
 	s := &MockBondService{}
 	s.On("GetBond", mock.Anything, mock.Anything).Return(&instrument.Bond{}, nil)
-	s.On("GetBondCoupons", mock.Anything, mock.Anything, mock.Anything).Return([]instrument.BondCoupon{}, nil)
+	s.On("GetBondCoupons", mock.Anything, mock.Anything, mock.Anything).Return([]instrument.Coupon{}, nil)
 	return s
 }
 
@@ -155,9 +162,9 @@ func (m *MockBondService) GetBond(ctx context.Context, ref instrument.BondRef) (
 	return args.Get(0).(*instrument.Bond), args.Error(1)
 }
 
-func (m *MockBondService) GetBondCoupons(ctx context.Context, bond instrument.BondRef, params instrument.GetBondCouponsParams) ([]instrument.BondCoupon, error) {
+func (m *MockBondService) GetBondCoupons(ctx context.Context, bond instrument.BondRef, params instrument.GetBondCouponsParams) ([]instrument.Coupon, error) {
 	args := m.Called(ctx, bond, params)
-	return args.Get(0).([]instrument.BondCoupon), args.Error(1)
+	return args.Get(0).([]instrument.Coupon), args.Error(1)
 }
 
 var moneyValueCounter int32
