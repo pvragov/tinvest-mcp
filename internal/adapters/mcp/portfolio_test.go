@@ -18,6 +18,7 @@ func TestNewGetPortfolio(t *testing.T) {
 		var (
 			avgPrice        = newMoneyValue()
 			instrumentPrice = newMoneyValue()
+			aciPrice        = newMoneyValue()
 		)
 
 		portfolio := &invest.Portfolio{
@@ -31,6 +32,7 @@ func TestNewGetPortfolio(t *testing.T) {
 				ClassCode:       "SPBXM",
 				AveragePrice:    avgPrice,
 				InstrumentPrice: instrumentPrice,
+				ACI:             &aciPrice,
 			}},
 		}
 
@@ -62,6 +64,7 @@ func TestNewGetPortfolio(t *testing.T) {
 					ClassCode:       "SPBXM",
 					AveragePrice:    moneyView(avgPrice),
 					InstrumentPrice: moneyView(instrumentPrice),
+					ACI:             (*moneyView)(&aciPrice),
 				}},
 			},
 		}

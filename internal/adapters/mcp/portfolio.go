@@ -47,14 +47,15 @@ type portfolioView struct {
 }
 
 type positionView struct {
-	InstrumentID    string    `json:"instrumentID"`
-	FIGI            string    `json:"FIGI"`
-	Quantity        int64     `json:"quantity"`
-	Instrument      string    `json:"instrumentType"`
-	Ticker          string    `json:"ticker"`
-	ClassCode       string    `json:"classCode"`
-	AveragePrice    moneyView `json:"weightedAveragePrice"`
-	InstrumentPrice moneyView `json:"instrumentCurrentPrice"`
+	InstrumentID    string     `json:"instrumentID"`
+	FIGI            string     `json:"FIGI"`
+	Quantity        int64      `json:"quantity"`
+	Instrument      string     `json:"instrumentType"`
+	Ticker          string     `json:"ticker"`
+	ClassCode       string     `json:"classCode"`
+	AveragePrice    moneyView  `json:"weightedAveragePrice"`
+	InstrumentPrice moneyView  `json:"instrumentCurrentPrice"`
+	ACI             *moneyView `json:"accruedCouponInterest"`
 }
 
 func mapPortfolio(p *invest.Portfolio) portfolioView {
@@ -74,6 +75,10 @@ func mapPortfolio(p *invest.Portfolio) portfolioView {
 			ClassCode:       pos.ClassCode,
 			AveragePrice:    moneyView(pos.AveragePrice),
 			InstrumentPrice: moneyView(pos.InstrumentPrice),
+		}
+
+		if pos.ACI != nil {
+			view.Positions[i].ACI = (*moneyView)(pos.ACI)
 		}
 	}
 
