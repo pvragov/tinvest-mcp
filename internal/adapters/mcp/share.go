@@ -41,6 +41,7 @@ func NewGetShareTool(service ShareService) server.ServerTool {
 				Name:     share.Name,
 				ISIN:     share.ISIN,
 				Currency: share.Currency,
+				LotSize:  share.LotSize,
 			})
 		},
 	}
@@ -51,6 +52,7 @@ type getShareReply struct {
 	Name     string `json:"name"`
 	ISIN     string `json:"isin"`
 	Currency string `json:"currency"`
+	LotSize  int    `json:"lotSize"`
 }
 
 //nolint:dupl
@@ -110,11 +112,7 @@ type shareDividendsView struct {
 
 func mapShareDividend(d *instrument.Dividend) shareDividendsView {
 	return shareDividendsView{
-		Value: moneyView{
-			Unit:      d.Value.Units,
-			MinorUnit: d.Value.MinorUnits,
-			Currency:  d.Value.Currency,
-		},
+		Value:        moneyView(d.Value),
 		PaymentDate:  d.PaymentDate,
 		DeclaredDate: d.DeclaredDate,
 		LastBuyDate:  d.LastBuyDate,

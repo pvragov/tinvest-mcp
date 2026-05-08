@@ -31,6 +31,7 @@ type Share struct {
 	Name     string
 	ISIN     string
 	Currency string
+	LotSize  int
 }
 
 type Dividend struct {

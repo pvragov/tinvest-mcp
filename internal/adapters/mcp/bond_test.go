@@ -2,6 +2,7 @@ package mcp
 
 import (
 	"context"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -13,7 +14,7 @@ import (
 )
 
 func TestNewGetBondTool(t *testing.T) {
-	
+
 	t.Run("success", func(t *testing.T) {
 		bond := &instrument.Bond{
 			ID:                "bond-1",
@@ -22,6 +23,9 @@ func TestNewGetBondTool(t *testing.T) {
 			Currency:          "rub",
 			HasAmortization:   true,
 			HasFloatingCoupon: true,
+			LotSize:           10,
+			Nominal:           newMoneyValue(),
+			InitialNominal:    newMoneyValue(),
 		}
 
 		service := &MockBondService{}
@@ -47,6 +51,9 @@ func TestNewGetBondTool(t *testing.T) {
 			Currency:          "rub",
 			HasAmortization:   true,
 			HasFloatingCoupon: true,
+			LotSize:           10,
+			Nominal:           moneyView(bond.Nominal),
+			InitialNominal:    moneyView(bond.InitialNominal),
 		}, res.StructuredContent)
 	})
 }
@@ -92,7 +99,7 @@ func TestNewGetBondCouponsTool(t *testing.T) {
 				CouponDate:       time.Date(2024, 6, 1, 0, 0, 0, 0, time.UTC),
 				CouponNumber:     1,
 				CouponPeriodDays: 182,
-				OneBondPay:       moneyView{Unit: 50, MinorUnit: 0, Currency: "rub"},
+				OneBondPay:       moneyView{Units: 50, MinorUnits: 0, Currency: "rub"},
 			}},
 		}, res.StructuredContent)
 	})
@@ -151,4 +158,18 @@ func (m *MockBondService) GetBond(ctx context.Context, ref instrument.BondRef) (
 func (m *MockBondService) GetBondCoupons(ctx context.Context, bond instrument.BondRef, params instrument.GetBondCouponsParams) ([]instrument.BondCoupon, error) {
 	args := m.Called(ctx, bond, params)
 	return args.Get(0).([]instrument.BondCoupon), args.Error(1)
+}
+
+var moneyValueCounter int32
+
+func newMoneyValue() instrument.Money {
+	var (
+		units      = atomic.AddInt32(&moneyValueCounter, 1)
+		minorUnits = atomic.AddInt32(&moneyValueCounter, 1)
+	)
+	return instrument.Money{
+		Units:      int64(units),
+		MinorUnits: minorUnits,
+		Currency:   "USD",
+	}
 }

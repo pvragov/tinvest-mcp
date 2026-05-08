@@ -17,12 +17,14 @@ type Portfolio struct {
 }
 
 type PortfolioPosition struct {
-	ID         string
-	FIGI       string
-	Quantity   int64
-	Instrument instrument.Type
-	Ticker     string
-	ClassCode  string
+	ID              string
+	FIGI            string
+	Quantity        int64
+	Instrument      instrument.Type
+	Ticker          string
+	ClassCode       string
+	AveragePrice    instrument.Money
+	InstrumentPrice instrument.Money
 }
 
 type PortfolioRepository interface {

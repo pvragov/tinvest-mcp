@@ -47,12 +47,14 @@ type portfolioView struct {
 }
 
 type positionView struct {
-	InstrumentID string `json:"instrumentID"`
-	FIGI         string `json:"FIGI"`
-	Quantity     int64  `json:"quantity"`
-	Instrument   string `json:"instrumentType"`
-	Ticker       string `json:"ticker"`
-	ClassCode    string `json:"classCode"`
+	InstrumentID    string    `json:"instrumentID"`
+	FIGI            string    `json:"FIGI"`
+	Quantity        int64     `json:"quantity"`
+	Instrument      string    `json:"instrumentType"`
+	Ticker          string    `json:"ticker"`
+	ClassCode       string    `json:"classCode"`
+	AveragePrice    moneyView `json:"weightedAveragePrice"`
+	InstrumentPrice moneyView `json:"instrumentCurrentPrice"`
 }
 
 func mapPortfolio(p *invest.Portfolio) portfolioView {
@@ -61,16 +63,25 @@ func mapPortfolio(p *invest.Portfolio) portfolioView {
 		Positions: make([]positionView, len(p.Positions)),
 	}
 
-	for i, pos := range p.Positions {
+	for i := range p.Positions {
+		pos := p.Positions[i]
 		view.Positions[i] = positionView{
-			InstrumentID: pos.ID,
-			FIGI:         pos.FIGI,
-			Quantity:     pos.Quantity,
-			Instrument:   pos.Instrument.String(),
-			Ticker:       pos.Ticker,
-			ClassCode:    pos.ClassCode,
+			InstrumentID:    pos.ID,
+			FIGI:            pos.FIGI,
+			Quantity:        pos.Quantity,
+			Instrument:      pos.Instrument.String(),
+			Ticker:          pos.Ticker,
+			ClassCode:       pos.ClassCode,
+			AveragePrice:    moneyView(pos.AveragePrice),
+			InstrumentPrice: moneyView(pos.InstrumentPrice),
 		}
 	}
 
 	return view
+}
+
+type moneyView struct {
+	Units      int64  `json:"units"`
+	MinorUnits int32  `json:"minorUnits"`
+	Currency   string `json:"currency"`
 }

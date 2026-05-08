@@ -23,6 +23,6 @@ tasks:
       - go test -v -timeout=1m ./...
 
   run:
-    desc: Запуск без сборки
+    desc: Запуск приложения
     cmds:
-      - go run ./cmd/tinvest-mcp/
+      - go run ./cmd/tinvest-mcp {{.CLI_ARGS}}
