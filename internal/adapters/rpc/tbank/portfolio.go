@@ -36,7 +36,7 @@ func (a *PortfolioAdapter) FetchPortfolio(_ context.Context, p *invest.Portfolio
 }
 
 func mapProtoPortfolioPosition(p *proto.PortfolioPosition) invest.PortfolioPosition {
-	return invest.PortfolioPosition{
+	ret := invest.PortfolioPosition{
 		ID:              p.InstrumentUid,
 		FIGI:            p.Figi,
 		Quantity:        p.Quantity.Units,
@@ -46,6 +46,11 @@ func mapProtoPortfolioPosition(p *proto.PortfolioPosition) invest.PortfolioPosit
 		InstrumentPrice: mapProtoMoney(p.GetCurrentPrice()),
 		AveragePrice:    mapProtoMoney(p.GetAveragePositionPrice()),
 	}
+	if p.CurrentNkd != nil {
+		ret.ACI = new(mapProtoMoney(p.CurrentNkd))
+	}
+
+	return ret
 }
 
 var (

@@ -25,6 +25,7 @@ type PortfolioPosition struct {
 	ClassCode       string
 	AveragePrice    instrument.Money
 	InstrumentPrice instrument.Money
+	ACI             *instrument.Money
 }
 
 type PortfolioRepository interface {
