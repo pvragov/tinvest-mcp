@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/pvragov/tinvest-mcp/internal/model/instrument"
+	"github.com/sevlyar/box"
 )
 
 type PortfolioFetcher interface {
@@ -25,7 +26,7 @@ type PortfolioPosition struct {
 	ClassCode       string
 	AveragePrice    instrument.Money
 	InstrumentPrice instrument.Money
-	ACI             *instrument.Money
+	ACI             box.Optional[instrument.Money]
 }
 
 type PortfolioRepository interface {

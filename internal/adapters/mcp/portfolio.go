@@ -4,10 +4,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/pvragov/tinvest-mcp/internal/model/invest"
-
 	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/mark3labs/mcp-go/server"
+	"github.com/pvragov/tinvest-mcp/internal/model/invest"
 )
 
 type PortfolioService interface {
@@ -77,8 +76,8 @@ func mapPortfolio(p *invest.Portfolio) portfolioView {
 			InstrumentPrice: moneyView(pos.InstrumentPrice),
 		}
 
-		if pos.ACI != nil {
-			view.Positions[i].ACI = (*moneyView)(pos.ACI)
+		if pos.ACI.IsSome() {
+			view.Positions[i].ACI = new(moneyView(pos.ACI.Get()))
 		}
 	}
 
