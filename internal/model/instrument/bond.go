@@ -33,7 +33,7 @@ type FetchBondRedemptionParams struct {
 	To   time.Time
 }
 
-type Repository interface {
+type BondRepository interface {
 	BondFetcher
 	BondCouponsFetcher
 	BondRedemptionFetcher
@@ -90,10 +90,10 @@ func (m *Money) String() string {
 }
 
 type BondRegistry struct {
-	bonds Repository
+	bonds BondRepository
 }
 
-func NewBondRegistry(bonds Repository) *BondRegistry {
+func NewBondRegistry(bonds BondRepository) *BondRegistry {
 	return &BondRegistry{
 		bonds: bonds,
 	}

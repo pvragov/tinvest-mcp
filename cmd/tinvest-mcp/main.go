@@ -54,15 +54,17 @@ func run() error {
 		portfolioAdapter  = tbank.NewPortfolioAdapter(client.NewOperationsServiceClient())
 		instrumentAdapter = tbank.NewInstrumentAdapter(client.NewInstrumentsServiceClient())
 
-		accountRegistry   = invest.NewAccountRegistry(accountAdapter)
-		portfolioRegistry = invest.NewPortfolioRegistry(portfolioAdapter)
-		bondRegistry      = instrument.NewBondRegistry(instrumentAdapter)
-		shareRegistry     = instrument.NewShareRegistry(instrumentAdapter)
+		accountRegistry    = invest.NewAccountRegistry(accountAdapter)
+		portfolioRegistry  = invest.NewPortfolioRegistry(portfolioAdapter)
+		bondRegistry       = instrument.NewBondRegistry(instrumentAdapter)
+		shareRegistry      = instrument.NewShareRegistry(instrumentAdapter)
+		instrumentRegistry = instrument.NewRegistry(instrumentAdapter)
 	)
 
 	s.AddTools(
 		mcp.NewGetUserAccountsTool(accountRegistry),
 		mcp.NewGetPortfolio(portfolioRegistry),
+		mcp.NewSearchInstrumentTool(instrumentRegistry),
 		// Bond tools:
 		mcp.NewGetBondTool(bondRegistry),
 		mcp.NewGetBondCouponsTool(bondRegistry),

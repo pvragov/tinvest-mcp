@@ -172,3 +172,22 @@ func mapProtoMoney(v *proto.MoneyValue) instrument.Money {
 		Currency:   v.GetCurrency(),
 	}
 }
+
+func (a *InstrumentAdapter) SearchInstrument(_ context.Context, query string) ([]instrument.Info, error) {
+	resp, err := a.client.FindInstrument(query)
+	if err != nil {
+		return nil, fmt.Errorf("failed to exec find instrument rpc: %w", err)
+	}
+
+	ret := make([]instrument.Info, len(resp.Instruments))
+	for i, in := range resp.Instruments {
+		ret[i] = instrument.Info{
+			Type: mapInstrumentType[in.GetInstrumentType()],
+			ID:   in.GetUid(),
+			ISIN: in.GetIsin(),
+			Name: in.GetName(),
+		}
+	}
+
+	return ret, nil
+}
