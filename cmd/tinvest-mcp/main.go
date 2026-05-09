@@ -56,8 +56,6 @@ func run() error {
 
 		accountRegistry    = invest.NewAccountRegistry(accountAdapter)
 		portfolioRegistry  = invest.NewPortfolioRegistry(portfolioAdapter)
-		bondRegistry       = instrument.NewBondRegistry(instrumentAdapter)
-		shareRegistry      = instrument.NewShareRegistry(instrumentAdapter)
 		instrumentRegistry = instrument.NewRegistry(instrumentAdapter)
 	)
 
@@ -66,12 +64,12 @@ func run() error {
 		mcp.NewGetPortfolio(portfolioRegistry),
 		mcp.NewSearchInstrumentTool(instrumentRegistry),
 		// Bond tools:
-		mcp.NewGetBondTool(bondRegistry),
-		mcp.NewGetBondCouponsTool(bondRegistry),
-		mcp.NewGetBondRedemptionsTool(bondRegistry),
+		mcp.NewGetBondTool(instrumentRegistry),
+		mcp.NewGetBondCouponsTool(instrumentRegistry),
+		mcp.NewGetBondRedemptionsTool(instrumentRegistry),
 		// Share tools:
-		mcp.NewGetShareTool(shareRegistry),
-		mcp.NewGetShareDividendsTool(shareRegistry),
+		mcp.NewGetShareTool(instrumentRegistry),
+		mcp.NewGetShareDividendsTool(instrumentRegistry),
 	)
 
 	var httpDebugServerEnable bool // use http only for debug

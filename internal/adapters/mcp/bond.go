@@ -201,6 +201,8 @@ func NewGetBondTool(service BondService) server.ServerTool {
 			return mcp.NewToolResultJSON(getBondReply{
 				ID:                bond.ID,
 				Name:              bond.Name,
+				Ticker:            bond.Ticker,
+				ClassCode:         bond.ClassCode,
 				ISIN:              bond.ISIN,
 				Currency:          bond.Currency,
 				MaturityDate:      getOptionalValue(bond.MaturityDate),
@@ -218,6 +220,8 @@ func NewGetBondTool(service BondService) server.ServerTool {
 type getBondReply struct {
 	ID                string     `json:"instrumentID"`
 	Name              string     `json:"name"`
+	Ticker            string     `json:"ticker"`
+	ClassCode         string     `json:"classCode"`
 	ISIN              string     `json:"isin"`
 	Currency          string     `json:"currency"`
 	LotSize           int        `json:"lotSize"`

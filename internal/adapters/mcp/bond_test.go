@@ -22,6 +22,8 @@ func TestNewGetBondTool(t *testing.T) {
 		bond := &instrument.Bond{
 			ID:                "bond-1",
 			Name:              "Test Bond",
+			Ticker:            "Ticker",
+			ClassCode:         "ClassCode",
 			ISIN:              "RU000A0JWSQ7",
 			Currency:          "rub",
 			HasAmortization:   true,
@@ -52,6 +54,8 @@ func TestNewGetBondTool(t *testing.T) {
 		require.Equal(t, getBondReply{
 			ID:                "bond-1",
 			Name:              "Test Bond",
+			Ticker:            "Ticker",
+			ClassCode:         "ClassCode",
 			ISIN:              "RU000A0JWSQ7",
 			Currency:          "rub",
 			HasAmortization:   true,
