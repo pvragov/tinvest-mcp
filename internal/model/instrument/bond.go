@@ -2,7 +2,6 @@ package instrument
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/sevlyar/box"
@@ -42,6 +41,8 @@ type BondRepository interface {
 type Bond struct {
 	ID                string // Instrument ID
 	Name              string
+	Ticker            string
+	ClassCode         string
 	ISIN              string
 	Currency          string
 	LotSize           int
@@ -73,90 +74,4 @@ type BondRedemption struct {
 type CuponPeriod struct {
 	Start time.Time
 	End   time.Time
-}
-
-type Money struct {
-	Units      int64
-	MinorUnits int32
-	Currency   string
-}
-
-func (m *Money) String() string {
-	if m.MinorUnits < 0 {
-		return fmt.Sprintf("%d.%d", m.Units, m.MinorUnits*-1)
-	}
-
-	return fmt.Sprintf("%d.%d", m.Units, m.MinorUnits)
-}
-
-type BondRegistry struct {
-	bonds BondRepository
-}
-
-func NewBondRegistry(bonds BondRepository) *BondRegistry {
-	return &BondRegistry{
-		bonds: bonds,
-	}
-}
-
-func (r *BondRegistry) GetBondCoupons(
-	ctx context.Context, bond BondRef, params GetBondCouponsParams,
-) ([]BondCoupon, error) {
-	if err := params.Validate(); err != nil {
-		return nil, err
-	}
-
-	return r.bonds.FetchBondCoupons(ctx, bond, FetchBondCouponParams(params))
-}
-
-type GetBondCouponsParams struct {
-	From time.Time
-	To   time.Time
-}
-
-func (p *GetBondCouponsParams) Validate() error {
-	if p.From.After(p.To) {
-		return fmt.Errorf("from time must be before to time")
-	}
-
-	return nil
-}
-
-func (r *BondRegistry) GetBondRedemptions(
-	ctx context.Context,
-	bond BondRef,
-	params GetBondRedemptionParams,
-) ([]BondRedemption, error) {
-	if err := params.Validate(); err != nil {
-		return nil, err
-	}
-
-	redemptions, err := r.bonds.FetchBondRedemptions(ctx, bond, FetchBondRedemptionParams(params))
-	if err != nil {
-		return nil, fmt.Errorf("failed to fetch bond redemptions: %w", err)
-	}
-
-	return redemptions, nil
-}
-
-type GetBondRedemptionParams struct {
-	From time.Time
-	To   time.Time
-}
-
-func (p *GetBondRedemptionParams) Validate() error {
-	if p.From.After(p.To) {
-		return fmt.Errorf("from time must be before to time")
-	}
-
-	return nil
-}
-
-func (r *BondRegistry) GetBond(ctx context.Context, ref BondRef) (*Bond, error) {
-	bond := &Bond{ID: ref.ID}
-	if err := r.bonds.FetchBond(ctx, bond); err != nil {
-		return nil, fmt.Errorf("failed to fetch bond: %w", err)
-	}
-
-	return bond, nil
 }

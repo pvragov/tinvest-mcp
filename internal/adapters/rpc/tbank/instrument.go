@@ -95,6 +95,8 @@ func (a *InstrumentAdapter) FetchBond(_ context.Context, bond *instrument.Bond) 
 	*bond = instrument.Bond{
 		ID:                bond.ID,
 		Name:              in.GetName(),
+		Ticker:            in.GetTicker(),
+		ClassCode:         in.GetClassCode(),
 		ISIN:              in.GetIsin(),
 		Currency:          in.GetCurrency(),
 		Nominal:           mapProtoMoney(in.GetNominal()),
