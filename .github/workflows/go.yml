@@ -15,37 +15,19 @@ jobs:
       uses: actions/setup-go@v4
       with:
         go-version: '1.26'
-    - name: Set up vendor
-      run: go mod vendor
     - name: golangci-lint
       uses: golangci/golangci-lint-action@v8
       with:
         version: latest
         args: --timeout=3m
 
-  build:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-    - name: Set up Go
-      uses: actions/setup-go@v4
-      with:
-        go-version: '1.26'
-    - name: Set up vendor
-      run: go mod vendor
-    - name: Build
-      run: go build -v ./...
-
   test:
     runs-on: ubuntu-latest
-    needs: build
     steps:
     - uses: actions/checkout@v4
     - name: Set up Go
       uses: actions/setup-go@v4
       with:
         go-version: '1.26'
-    - name: Set up vendor
-      run: go mod vendor
     - name: Test
       run: go test -v -shuffle=on -timeout=3m ./...
