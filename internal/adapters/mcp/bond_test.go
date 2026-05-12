@@ -15,7 +15,7 @@ import (
 )
 
 func TestNewGetBondTool(t *testing.T) {
-	maturityDate := time.Now()
+	maturityDate := time.Now().UTC()
 	aci := newMoneyValue()
 
 	t.Run("success", func(t *testing.T) {
@@ -70,10 +70,10 @@ func TestNewGetBondTool(t *testing.T) {
 }
 
 func TestNewGetBondCouponsTool(t *testing.T) {
-	from := time.Now().Add(-1 * time.Hour).Truncate(time.Second)
-	to := time.Now().Truncate(time.Second)
+	from := time.Now().Add(-1 * time.Hour).Truncate(time.Second).UTC()
+	to := time.Now().Truncate(time.Second).UTC()
 
-	payDate := time.Now().Add(1 * time.Hour).Truncate(time.Second)
+	payDate := time.Now().Add(1 * time.Hour).Truncate(time.Second).UTC()
 	period := instrument.CuponPeriod{Start: from, End: to}
 
 	t.Run("success", func(t *testing.T) {
@@ -157,10 +157,10 @@ func TestNewGetBondCouponsTool(t *testing.T) {
 }
 
 func TestNewGetBondRedemptionsTool(t *testing.T) {
-	from := time.Now().Add(-1 * time.Hour).Truncate(time.Second)
-	to := time.Now().Truncate(time.Second)
+	from := time.Now().Add(-1 * time.Hour).Truncate(time.Second).UTC()
+	to := time.Now().Truncate(time.Second).UTC()
 
-	payDate := time.Now().Add(1 * time.Hour).Truncate(time.Second)
+	payDate := time.Now().Add(1 * time.Hour).Truncate(time.Second).UTC()
 
 	t.Run("success", func(t *testing.T) {
 		oneBondPay := newMoneyValue()

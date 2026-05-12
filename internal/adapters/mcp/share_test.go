@@ -50,15 +50,19 @@ func TestNewGetShareTool(t *testing.T) {
 }
 
 func TestNewGetShareDividendsTool(t *testing.T) {
-	from := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)
-	to := time.Date(2024, 12, 31, 0, 0, 0, 0, time.UTC)
+	from := time.Now().Add(-1 * time.Hour).Truncate(time.Second).UTC()
+	to := time.Now().Truncate(time.Second).UTC()
+
+	paymentDate := time.Now().Add(2 * time.Hour).Truncate(time.Second).UTC()
+	declaredDate := time.Now().Add(3 * time.Hour).Truncate(time.Second).UTC()
+	lastBuyDate := time.Now().Add(4 * time.Hour).Truncate(time.Second).UTC()
 
 	t.Run("success", func(t *testing.T) {
 		dividends := []instrument.Dividend{{
 			Value:        instrument.Money{Units: 1, MinorUnits: 50, Currency: "usd"},
-			PaymentDate:  time.Date(2024, 6, 15, 0, 0, 0, 0, time.UTC),
-			DeclaredDate: time.Date(2024, 5, 1, 0, 0, 0, 0, time.UTC),
-			LastBuyDate:  time.Date(2024, 6, 10, 0, 0, 0, 0, time.UTC),
+			PaymentDate:  paymentDate,
+			DeclaredDate: declaredDate,
+			LastBuyDate:  lastBuyDate,
 			YieldValue:   3.5,
 		}}
 
@@ -89,9 +93,9 @@ func TestNewGetShareDividendsTool(t *testing.T) {
 			ID: "share-1",
 			Dividends: []shareDividendsView{{
 				Value:        moneyView{Units: 1, MinorUnits: 50, Currency: "usd"},
-				PaymentDate:  time.Date(2024, 6, 15, 0, 0, 0, 0, time.UTC),
-				DeclaredDate: time.Date(2024, 5, 1, 0, 0, 0, 0, time.UTC),
-				LastBuyDate:  time.Date(2024, 6, 10, 0, 0, 0, 0, time.UTC),
+				PaymentDate:  paymentDate,
+				DeclaredDate: declaredDate,
+				LastBuyDate:  lastBuyDate,
 				YieldValue:   3.5,
 			}},
 		}, res.StructuredContent)
