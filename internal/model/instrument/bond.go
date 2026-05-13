@@ -14,7 +14,7 @@ type BondFetcher interface {
 
 type BondCouponsFetcher interface {
 	// FetchBondCoupons fetches the bound coupons by the specified params.
-	FetchBondCoupons(ctx context.Context, bond BondRef, params FetchBondCouponParams) ([]BondCoupon, error)
+	FetchBondCoupons(ctx context.Context, bond Ref, params FetchBondCouponParams) ([]BondCoupon, error)
 }
 
 type FetchBondCouponParams struct {
@@ -24,7 +24,7 @@ type FetchBondCouponParams struct {
 
 type BondRedemptionFetcher interface {
 	// FetchBondRedemptions fetches the bond redemptions by the specified bond.
-	FetchBondRedemptions(ctx context.Context, bond BondRef, params FetchBondRedemptionParams) ([]BondRedemption, error)
+	FetchBondRedemptions(ctx context.Context, bond Ref, params FetchBondRedemptionParams) ([]BondRedemption, error)
 }
 
 type FetchBondRedemptionParams struct {
@@ -39,7 +39,7 @@ type BondRepository interface {
 }
 
 type Bond struct {
-	ID                string // Instrument ID
+	Instrument
 	Name              string
 	Ticker            string
 	ClassCode         string
@@ -54,8 +54,12 @@ type Bond struct {
 	HasFloatingCoupon bool
 }
 
-type BondRef struct {
-	ID string // Instrument ID
+func NewBond(id string) *Bond {
+	return &Bond{
+		Instrument: Instrument{
+			ID: id,
+		},
+	}
 }
 
 type BondCoupon struct {

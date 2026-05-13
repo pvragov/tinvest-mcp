@@ -16,7 +16,12 @@ func TestNewGetShareTool(t *testing.T) {
 
 	t.Run("success", func(t *testing.T) {
 		share := &instrument.Share{
-			ID:       "share-1",
+			Instrument: instrument.Instrument{
+				ID:        "share-1",
+				Type:      instrument.TypeShare,
+				Ticker:    "ticker",
+				ClassCode: "classCode",
+			},
 			Name:     "Test Share",
 			ISIN:     "US0378331005",
 			Currency: "usd",
@@ -25,7 +30,7 @@ func TestNewGetShareTool(t *testing.T) {
 
 		service := &MockShareService{}
 		service.On("GetShare", mock.Anything, mock.Anything).Run(func(args mock.Arguments) {
-			ref := args.Get(1).(instrument.ShareRef)
+			ref := args.Get(1).(instrument.Ref)
 			require.Equal(t, "share-1", ref.ID)
 		}).Return(share, nil)
 
@@ -40,7 +45,12 @@ func TestNewGetShareTool(t *testing.T) {
 
 		require.NoError(t, err)
 		require.Equal(t, getShareReply{
-			ID:       "share-1",
+			instrumentView: instrumentView{
+				ID:        "share-1",
+				Type:      instrument.TypeShare.String(),
+				Ticker:    "ticker",
+				ClassCode: "classCode",
+			},
 			Name:     "Test Share",
 			ISIN:     "US0378331005",
 			Currency: "usd",
@@ -68,7 +78,7 @@ func TestNewGetShareDividendsTool(t *testing.T) {
 
 		service := &MockShareService{}
 		service.On("GetShareDividends", mock.Anything, mock.Anything, mock.Anything).Run(func(args mock.Arguments) {
-			ref := args.Get(1).(instrument.ShareRef)
+			ref := args.Get(1).(instrument.Ref)
 			params := args.Get(2).(instrument.GetShareDividendsParams)
 			require.Equal(t, "share-1", ref.ID)
 			require.Equal(t, from, params.From)
@@ -147,12 +157,12 @@ func NewMockShareServiceStub() *MockShareService {
 	return s
 }
 
-func (m *MockShareService) GetShare(ctx context.Context, ref instrument.ShareRef) (*instrument.Share, error) {
+func (m *MockShareService) GetShare(ctx context.Context, ref instrument.Ref) (*instrument.Share, error) {
 	args := m.Called(ctx, ref)
 	return args.Get(0).(*instrument.Share), args.Error(1)
 }
 
-func (m *MockShareService) GetShareDividends(ctx context.Context, share instrument.ShareRef, params instrument.GetShareDividendsParams) ([]instrument.Dividend, error) {
+func (m *MockShareService) GetShareDividends(ctx context.Context, share instrument.Ref, params instrument.GetShareDividendsParams) ([]instrument.Dividend, error) {
 	args := m.Called(ctx, share, params)
 	return args.Get(0).([]instrument.Dividend), args.Error(1)
 }

@@ -17,9 +17,19 @@ const (
 	TypeETF
 )
 
+type Instrument struct {
+	Type      Type
+	ID        string
+	Ticker    string
+	ClassCode string
+}
+
+type Ref struct {
+	ID string
+}
+
 type Info struct {
-	Type Type
-	ID   string
+	Instrument
 	ISIN string
 	Name string
 }
@@ -68,7 +78,7 @@ func (r *Registry) SearchInstrument(ctx context.Context, query string) ([]Info, 
 }
 
 func (r *Registry) GetBondCoupons(
-	ctx context.Context, bond BondRef, params GetBondCouponsParams,
+	ctx context.Context, bond Ref, params GetBondCouponsParams,
 ) ([]BondCoupon, error) {
 	if err := params.Validate(); err != nil {
 		return nil, err
@@ -92,7 +102,7 @@ func (p *GetBondCouponsParams) Validate() error {
 
 func (r *Registry) GetBondRedemptions(
 	ctx context.Context,
-	bond BondRef,
+	bond Ref,
 	params GetBondRedemptionParams,
 ) ([]BondRedemption, error) {
 	if err := params.Validate(); err != nil {
@@ -120,8 +130,8 @@ func (p *GetBondRedemptionParams) Validate() error {
 	return nil
 }
 
-func (r *Registry) GetBond(ctx context.Context, ref BondRef) (*Bond, error) {
-	bond := &Bond{ID: ref.ID}
+func (r *Registry) GetBond(ctx context.Context, ref Ref) (*Bond, error) {
+	bond := NewBond(ref.ID)
 	if err := r.repo.FetchBond(ctx, bond); err != nil {
 		return nil, fmt.Errorf("failed to fetch bond: %w", err)
 	}
@@ -129,8 +139,8 @@ func (r *Registry) GetBond(ctx context.Context, ref BondRef) (*Bond, error) {
 	return bond, nil
 }
 
-func (r *Registry) GetShare(ctx context.Context, ref ShareRef) (*Share, error) {
-	share := &Share{ID: ref.ID}
+func (r *Registry) GetShare(ctx context.Context, ref Ref) (*Share, error) {
+	share := NewShare(ref.ID)
 	if err := r.repo.FetchShare(ctx, share); err != nil {
 		return nil, fmt.Errorf("failed to fetch share: %w", err)
 	}
@@ -139,7 +149,7 @@ func (r *Registry) GetShare(ctx context.Context, ref ShareRef) (*Share, error) {
 }
 
 func (r *Registry) GetShareDividends(
-	ctx context.Context, share ShareRef, params GetShareDividendsParams,
+	ctx context.Context, share Ref, params GetShareDividendsParams,
 ) ([]Dividend, error) {
 	if err := params.Validate(); err != nil {
 		return nil, err

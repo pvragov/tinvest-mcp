@@ -23,7 +23,7 @@ func NewInstrumentAdapter(client *investgo.InstrumentsServiceClient) *Instrument
 
 func (a *InstrumentAdapter) FetchBondCoupons(
 	_ context.Context,
-	bond instrument.BondRef,
+	bond instrument.Ref,
 	params instrument.FetchBondCouponParams,
 ) ([]instrument.BondCoupon, error) {
 	resp, err := a.client.GetBondCoupons(bond.ID, params.From, params.To)
@@ -62,7 +62,7 @@ func mapProtoCoupon(c *proto.Coupon) instrument.BondCoupon {
 
 func (a *InstrumentAdapter) FetchBondRedemptions(
 	_ context.Context,
-	bond instrument.BondRef,
+	bond instrument.Ref,
 	params instrument.FetchBondRedemptionParams,
 ) ([]instrument.BondRedemption, error) {
 	resp, err := a.client.GetBondEvents(bond.ID, proto.GetBondEventsRequest_EVENT_TYPE_MTY, params.From, params.To)
@@ -93,7 +93,12 @@ func (a *InstrumentAdapter) FetchBond(_ context.Context, bond *instrument.Bond) 
 
 	in := resp.GetInstrument()
 	*bond = instrument.Bond{
-		ID:                bond.ID,
+		Instrument: instrument.Instrument{
+			Type:      instrument.TypeBond,
+			ID:        in.GetUid(),
+			Ticker:    in.GetTicker(),
+			ClassCode: in.GetClassCode(),
+		},
 		Name:              in.GetName(),
 		Ticker:            in.GetTicker(),
 		ClassCode:         in.GetClassCode(),
@@ -126,7 +131,12 @@ func (a *InstrumentAdapter) FetchShare(_ context.Context, share *instrument.Shar
 
 	in := resp.GetInstrument()
 	*share = instrument.Share{
-		ID:       share.ID,
+		Instrument: instrument.Instrument{
+			Type:      instrument.TypeShare,
+			ID:        in.GetUid(),
+			Ticker:    in.GetTicker(),
+			ClassCode: in.GetClassCode(),
+		},
 		Name:     in.GetName(),
 		ISIN:     in.GetIsin(),
 		Currency: in.GetCurrency(),
@@ -138,7 +148,7 @@ func (a *InstrumentAdapter) FetchShare(_ context.Context, share *instrument.Shar
 
 func (a *InstrumentAdapter) FetchShareDividends(
 	_ context.Context,
-	ref instrument.ShareRef,
+	ref instrument.Ref,
 	params instrument.FetchShareDividendsParams,
 ) ([]instrument.Dividend, error) {
 	resp, err := a.client.GetDividents(ref.ID, params.From, params.To)
@@ -184,8 +194,12 @@ func (a *InstrumentAdapter) SearchInstrument(_ context.Context, query string) ([
 	ret := make([]instrument.Info, len(resp.Instruments))
 	for i, in := range resp.Instruments {
 		ret[i] = instrument.Info{
-			Type: mapInstrumentType[in.GetInstrumentType()],
-			ID:   in.GetUid(),
+			Instrument: instrument.Instrument{
+				ID:        in.GetUid(),
+				Type:      mapInstrumentType[in.GetInstrumentType()],
+				Ticker:    in.GetTicker(),
+				ClassCode: in.GetClassCode(),
+			},
 			ISIN: in.GetIsin(),
 			Name: in.GetName(),
 		}
