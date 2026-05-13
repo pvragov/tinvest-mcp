@@ -39,10 +39,9 @@ func NewSearchInstrumentTool(service InstrumentService) server.ServerTool {
 			}
 			for i := range infos {
 				reply.Instruments[i] = instrumentInfoView{
-					Type: infos[i].Type.String(),
-					ID:   infos[i].ID,
-					ISIN: infos[i].ISIN,
-					Name: infos[i].Name,
+					instrumentView: mapInstrument(&infos[i].Instrument),
+					ISIN:           infos[i].ISIN,
+					Name:           infos[i].Name,
 				}
 			}
 
@@ -56,8 +55,23 @@ type instrumentSearchReply struct {
 }
 
 type instrumentInfoView struct {
-	Type string `json:"type"`
-	ID   string `json:"id"`
+	instrumentView
 	Name string `json:"name"`
 	ISIN string `json:"isin"`
+}
+
+type instrumentView struct {
+	Type      string `json:"instrumentType"`
+	ID        string `json:"instrumentID"`
+	Ticker    string `json:"ticker"`
+	ClassCode string `json:"classCode"`
+}
+
+func mapInstrument(i *instrument.Instrument) instrumentView {
+	return instrumentView{
+		Type:      i.Type.String(),
+		ID:        i.ID,
+		Ticker:    i.Ticker,
+		ClassCode: i.ClassCode,
+	}
 }

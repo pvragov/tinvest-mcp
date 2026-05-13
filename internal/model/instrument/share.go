@@ -12,7 +12,7 @@ type ShareFetcher interface {
 
 type ShareDividendFetcher interface {
 	// FetchShareDividends fetches the share dividends by the specified ID.
-	FetchShareDividends(ctx context.Context, ref ShareRef, params FetchShareDividendsParams) ([]Dividend, error)
+	FetchShareDividends(ctx context.Context, ref Ref, params FetchShareDividendsParams) ([]Dividend, error)
 }
 
 type FetchShareDividendsParams struct {
@@ -26,11 +26,19 @@ type ShareRepository interface {
 }
 
 type Share struct {
-	ID       string
+	Instrument
 	Name     string
 	ISIN     string
 	Currency string
 	LotSize  int
+}
+
+func NewShare(id string) *Share {
+	return &Share{
+		Instrument: Instrument{
+			ID: id,
+		},
+	}
 }
 
 type Dividend struct {
@@ -39,8 +47,4 @@ type Dividend struct {
 	DeclaredDate time.Time // Дата объявления
 	LastBuyDate  time.Time // Последний день (включительно) покупки для получения выплаты по UTC.
 	YieldValue   float64   // Величина доходности в процентах
-}
-
-type ShareRef struct {
-	ID string
 }

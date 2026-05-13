@@ -14,12 +14,12 @@ import (
 
 type BondService interface {
 	GetBondCoupons(
-		ctx context.Context, bond instrument.BondRef, params instrument.GetBondCouponsParams,
+		ctx context.Context, bond instrument.Ref, params instrument.GetBondCouponsParams,
 	) ([]instrument.BondCoupon, error)
 	GetBondRedemptions(
-		ctx context.Context, bond instrument.BondRef, params instrument.GetBondRedemptionParams,
+		ctx context.Context, bond instrument.Ref, params instrument.GetBondRedemptionParams,
 	) ([]instrument.BondRedemption, error)
-	GetBond(ctx context.Context, ref instrument.BondRef) (*instrument.Bond, error)
+	GetBond(ctx context.Context, ref instrument.Ref) (*instrument.Bond, error)
 }
 
 func NewGetBondCouponsTool(service BondService) server.ServerTool {
@@ -44,7 +44,7 @@ func NewGetBondCouponsTool(service BondService) server.ServerTool {
 				return nil, err
 			}
 
-			ref := instrument.BondRef{ID: req.GetString(instrumentArgName, "")}
+			ref := instrument.Ref{ID: req.GetString(instrumentArgName, "")}
 
 			coupons, err := service.GetBondCoupons(ctx, ref, instrument.GetBondCouponsParams(tr))
 			if err != nil {
@@ -142,7 +142,7 @@ func NewGetBondRedemptionsTool(service BondService) server.ServerTool {
 				return nil, err
 			}
 
-			ref := instrument.BondRef{ID: req.GetString(instrumentArgName, "")}
+			ref := instrument.Ref{ID: req.GetString(instrumentArgName, "")}
 
 			reds, err := service.GetBondRedemptions(ctx, ref, instrument.GetBondRedemptionParams(tr))
 			if err != nil {
@@ -191,7 +191,7 @@ func NewGetBondTool(service BondService) server.ServerTool {
 			mcp.WithOutputSchema[getBondReply](),
 		),
 		Handler: func(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-			ref := instrument.BondRef{ID: req.GetString(instrumentArgName, "")}
+			ref := instrument.Ref{ID: req.GetString(instrumentArgName, "")}
 
 			bond, err := service.GetBond(ctx, ref)
 			if err != nil {
@@ -199,7 +199,7 @@ func NewGetBondTool(service BondService) server.ServerTool {
 			}
 
 			return mcp.NewToolResultJSON(getBondReply{
-				ID:                bond.ID,
+				instrumentView:    mapInstrument(&bond.Instrument),
 				Name:              bond.Name,
 				Ticker:            bond.Ticker,
 				ClassCode:         bond.ClassCode,
@@ -218,7 +218,7 @@ func NewGetBondTool(service BondService) server.ServerTool {
 }
 
 type getBondReply struct {
-	ID                string     `json:"instrumentID"`
+	instrumentView
 	Name              string     `json:"name"`
 	Ticker            string     `json:"ticker"`
 	ClassCode         string     `json:"classCode"`

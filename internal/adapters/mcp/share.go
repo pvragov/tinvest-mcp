@@ -12,9 +12,9 @@ import (
 )
 
 type ShareService interface {
-	GetShare(ctx context.Context, ref instrument.ShareRef) (*instrument.Share, error)
+	GetShare(ctx context.Context, ref instrument.Ref) (*instrument.Share, error)
 	GetShareDividends(
-		ctx context.Context, share instrument.ShareRef, params instrument.GetShareDividendsParams,
+		ctx context.Context, share instrument.Ref, params instrument.GetShareDividendsParams,
 	) ([]instrument.Dividend, error)
 }
 
@@ -29,7 +29,7 @@ func NewGetShareTool(service ShareService) server.ServerTool {
 			mcp.WithOutputSchema[getShareReply](),
 		),
 		Handler: func(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-			ref := instrument.ShareRef{ID: req.GetString(instrumentArgName, "")}
+			ref := instrument.Ref{ID: req.GetString(instrumentArgName, "")}
 
 			share, err := service.GetShare(ctx, ref)
 			if err != nil {
@@ -37,18 +37,18 @@ func NewGetShareTool(service ShareService) server.ServerTool {
 			}
 
 			return mcp.NewToolResultJSON(getShareReply{
-				ID:       share.ID,
-				Name:     share.Name,
-				ISIN:     share.ISIN,
-				Currency: share.Currency,
-				LotSize:  share.LotSize,
+				instrumentView: mapInstrument(&share.Instrument),
+				Name:           share.Name,
+				ISIN:           share.ISIN,
+				Currency:       share.Currency,
+				LotSize:        share.LotSize,
 			})
 		},
 	}
 }
 
 type getShareReply struct {
-	ID       string `json:"instrumentID"`
+	instrumentView
 	Name     string `json:"name"`
 	ISIN     string `json:"isin"`
 	Currency string `json:"currency"`
@@ -77,7 +77,7 @@ func NewGetShareDividendsTool(service ShareService) server.ServerTool {
 				return nil, err
 			}
 
-			ref := instrument.ShareRef{ID: req.GetString(instrumentArgName, "")}
+			ref := instrument.Ref{ID: req.GetString(instrumentArgName, "")}
 
 			dividends, err := service.GetShareDividends(ctx, ref, instrument.GetShareDividendsParams(tr))
 			if err != nil {

@@ -18,10 +18,8 @@ type Portfolio struct {
 }
 
 type PortfolioPosition struct {
-	ID              string
-	FIGI            string
+	Instrument      instrument.Instrument
 	Quantity        int64
-	Instrument      instrument.Type
 	Ticker          string
 	ClassCode       string
 	AveragePrice    instrument.Money

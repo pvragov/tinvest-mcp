@@ -20,7 +20,12 @@ func TestNewGetBondTool(t *testing.T) {
 
 	t.Run("success", func(t *testing.T) {
 		bond := &instrument.Bond{
-			ID:                "bond-1",
+			Instrument: instrument.Instrument{
+				ID:        "bond-1",
+				Type:      instrument.TypeBond,
+				Ticker:    "ticker",
+				ClassCode: "classCode",
+			},
 			Name:              "Test Bond",
 			Ticker:            "Ticker",
 			ClassCode:         "ClassCode",
@@ -37,7 +42,7 @@ func TestNewGetBondTool(t *testing.T) {
 
 		service := &MockBondService{}
 		service.On("GetBond", mock.Anything, mock.Anything).Run(func(args mock.Arguments) {
-			ref := args.Get(1).(instrument.BondRef)
+			ref := args.Get(1).(instrument.Ref)
 			require.Equal(t, "bond-1", ref.ID)
 		}).Return(bond, nil)
 
@@ -52,7 +57,12 @@ func TestNewGetBondTool(t *testing.T) {
 
 		require.NoError(t, err)
 		require.Equal(t, getBondReply{
-			ID:                "bond-1",
+			instrumentView: instrumentView{
+				ID:        "bond-1",
+				Type:      instrument.TypeBond.String(),
+				Ticker:    "ticker",
+				ClassCode: "classCode",
+			},
 			Name:              "Test Bond",
 			Ticker:            "Ticker",
 			ClassCode:         "ClassCode",
@@ -88,7 +98,7 @@ func TestNewGetBondCouponsTool(t *testing.T) {
 
 		service := &MockBondService{}
 		service.On("GetBondCoupons", mock.Anything, mock.Anything, mock.Anything).Run(func(args mock.Arguments) {
-			ref := args.Get(1).(instrument.BondRef)
+			ref := args.Get(1).(instrument.Ref)
 			params := args.Get(2).(instrument.GetBondCouponsParams)
 			require.Equal(t, "bond-1", ref.ID)
 			require.Equal(t, from, params.From)
@@ -171,7 +181,7 @@ func TestNewGetBondRedemptionsTool(t *testing.T) {
 
 		service := &MockBondService{}
 		service.On("GetBondRedemptions", mock.Anything, mock.Anything, mock.Anything).Run(func(args mock.Arguments) {
-			ref := args.Get(1).(instrument.BondRef)
+			ref := args.Get(1).(instrument.Ref)
 			params := args.Get(2).(instrument.GetBondRedemptionParams)
 			require.Equal(t, "bond-1", ref.ID)
 			require.Equal(t, from, params.From)
@@ -248,17 +258,17 @@ func NewMockBondServiceStub() *MockBondService {
 	return s
 }
 
-func (m *MockBondService) GetBond(ctx context.Context, ref instrument.BondRef) (*instrument.Bond, error) {
+func (m *MockBondService) GetBond(ctx context.Context, ref instrument.Ref) (*instrument.Bond, error) {
 	args := m.Called(ctx, ref)
 	return args.Get(0).(*instrument.Bond), args.Error(1)
 }
 
-func (m *MockBondService) GetBondCoupons(ctx context.Context, bond instrument.BondRef, params instrument.GetBondCouponsParams) ([]instrument.BondCoupon, error) {
+func (m *MockBondService) GetBondCoupons(ctx context.Context, bond instrument.Ref, params instrument.GetBondCouponsParams) ([]instrument.BondCoupon, error) {
 	args := m.Called(ctx, bond, params)
 	return args.Get(0).([]instrument.BondCoupon), args.Error(1)
 }
 
-func (m *MockBondService) GetBondRedemptions(ctx context.Context, bond instrument.BondRef, params instrument.GetBondRedemptionParams) ([]instrument.BondRedemption, error) {
+func (m *MockBondService) GetBondRedemptions(ctx context.Context, bond instrument.Ref, params instrument.GetBondRedemptionParams) ([]instrument.BondRedemption, error) {
 	args := m.Called(ctx, bond, params)
 	return args.Get(0).([]instrument.BondRedemption), args.Error(1)
 }

@@ -25,10 +25,13 @@ func TestNewGetPortfolio(t *testing.T) {
 		portfolio := &invest.Portfolio{
 			Account: invest.AccountRef{ID: "acc-1"},
 			Positions: []invest.PortfolioPosition{{
-				ID:              "instr-1",
-				FIGI:            "BBG000B9XRY4",
+				Instrument: instrument.Instrument{
+					Type:      instrument.TypeShare,
+					ID:        "id",
+					Ticker:    "ticker",
+					ClassCode: "classCode",
+				},
 				Quantity:        10,
-				Instrument:      instrument.TypeShare,
 				Ticker:          "AAPL",
 				ClassCode:       "SPBXM",
 				AveragePrice:    avgPrice,
@@ -57,12 +60,13 @@ func TestNewGetPortfolio(t *testing.T) {
 			Portfolio: portfolioView{
 				AccountID: "acc-1",
 				Positions: []positionView{{
-					InstrumentID:    "instr-1",
-					FIGI:            "BBG000B9XRY4",
+					instrumentView: instrumentView{
+						Type:      instrument.TypeShare.String(),
+						ID:        "id",
+						Ticker:    "ticker",
+						ClassCode: "classCode",
+					},
 					Quantity:        10,
-					Instrument:      instrument.TypeShare.String(),
-					Ticker:          "AAPL",
-					ClassCode:       "SPBXM",
 					AveragePrice:    moneyView(avgPrice),
 					InstrumentPrice: moneyView(instrumentPrice),
 					ACI:             (*moneyView)(&aciPrice),
