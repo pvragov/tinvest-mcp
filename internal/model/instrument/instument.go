@@ -55,6 +55,7 @@ type Searcher interface {
 type Repository interface {
 	BondRepository
 	ShareRepository
+	ETFRepository
 	Searcher
 }
 
@@ -174,4 +175,13 @@ func (p *GetShareDividendsParams) Validate() error {
 	}
 
 	return nil
+}
+
+func (r *Registry) GetETF(ctx context.Context, ref Ref) (*ETF, error) {
+	etf := NewETF(ref.ID)
+	if err := r.repo.FetchETF(ctx, etf); err != nil {
+		return nil, fmt.Errorf("failed to fetch etf: %w", err)
+	}
+
+	return etf, nil
 }

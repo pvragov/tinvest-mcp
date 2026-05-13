@@ -207,3 +207,7 @@ func (a *InstrumentAdapter) SearchInstrument(_ context.Context, query string) ([
 
 	return ret, nil
 }
+
+func (a *InstrumentAdapter) FetchETF(_ context.Context, _ *instrument.ETF) error {
+	panic("implement me")
+}
