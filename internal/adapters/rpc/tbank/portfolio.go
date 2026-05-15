@@ -54,6 +54,18 @@ func mapProtoPortfolioPosition(p *proto.PortfolioPosition) invest.PortfolioPosit
 		ret.ACI = box.Some(mapProtoMoney(p.CurrentNkd))
 	}
 
+	if p.DailyYield != nil {
+		ret.DailyYield = box.Some(mapProtoMoney(p.DailyYield))
+	}
+
+	if p.ExpectedYield != nil {
+		ret.ExpectedYield = box.Some(instrument.Money{
+			Units:      p.ExpectedYield.Units,
+			MinorUnits: p.ExpectedYield.Nano / 10_000_000,
+			Currency:   ret.InstrumentPrice.Currency, // берем валюту из соседнего поля
+		})
+	}
+
 	return ret
 }
 

@@ -25,6 +25,8 @@ type PortfolioPosition struct {
 	AveragePrice    instrument.Money
 	InstrumentPrice instrument.Money
 	ACI             box.Optional[instrument.Money]
+	DailyYield      box.Optional[instrument.Money]
+	ExpectedYield   box.Optional[instrument.Money]
 }
 
 type PortfolioRepository interface {

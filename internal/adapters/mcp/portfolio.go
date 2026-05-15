@@ -51,6 +51,8 @@ type positionView struct {
 	AveragePrice    moneyView  `json:"weightedAveragePrice"`
 	InstrumentPrice moneyView  `json:"instrumentCurrentPrice"`
 	ACI             *moneyView `json:"accruedCouponInterest"`
+	DailyYield      *moneyView `json:"dailyYield"`
+	ExpectedYield   *moneyView `json:"expectedYield"`
 }
 
 func mapPortfolio(p *invest.Portfolio) portfolioView {
@@ -70,6 +72,14 @@ func mapPortfolio(p *invest.Portfolio) portfolioView {
 
 		if pos.ACI.IsSome() {
 			view.Positions[i].ACI = new(moneyView(pos.ACI.Get()))
+		}
+
+		if pos.DailyYield.IsSome() {
+			view.Positions[i].DailyYield = new(moneyView(pos.DailyYield.Get()))
+		}
+
+		if pos.ExpectedYield.IsSome() {
+			view.Positions[i].ExpectedYield = new(moneyView(pos.ExpectedYield.Get()))
 		}
 	}
 
