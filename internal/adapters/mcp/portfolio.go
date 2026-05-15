@@ -81,7 +81,6 @@ func mapPortfolio(p *invest.Portfolio) portfolioView {
 		if pos.ExpectedYield.IsSome() {
 			view.Positions[i].ExpectedYield = new(moneyView(pos.ExpectedYield.Get()))
 		}
-
 	}
 
 	return view
